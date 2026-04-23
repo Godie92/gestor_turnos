@@ -6,6 +6,7 @@ from django.utils import timezone
 from django.http import JsonResponse
 from .models import Booking, Service, Client
 from .forms import BookingForm, ServiceForm, ClientForm
+from .emails import send_booking_confirmation
 
 CALENDAR_START = 8
 CALENDAR_END = 21
@@ -34,6 +35,7 @@ def booking_create(request):
         booking = form.save(commit=False)
         booking.tenant = request.user.tenant
         booking.save()
+        send_booking_confirmation(booking)
         return redirect('booking_list')
     return render(request, 'bookings/form.html', {'form': form, 'title': 'Nueva reserva'})
 
@@ -72,16 +74,29 @@ def booking_status(request, pk):
 
 @login_required
 def calendar_view(request):
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+
     today = timezone.now().date()
     week_offset = int(request.GET.get('week', 0))
     week_start = today - datetime.timedelta(days=today.weekday()) + datetime.timedelta(weeks=week_offset)
     days = [week_start + datetime.timedelta(days=i) for i in range(7)]
 
-    bookings = list(Booking.objects.filter(
+    staff_filter = request.GET.get('staff', '')
+    service_filter = request.GET.get('service', '')
+
+    qs = Booking.objects.filter(
         tenant=request.user.tenant,
         start_time__date__gte=days[0],
         start_time__date__lte=days[-1],
-    ).select_related('client', 'service', 'staff'))
+    ).select_related('client', 'service', 'staff')
+
+    if staff_filter:
+        qs = qs.filter(staff_id=staff_filter)
+    if service_filter:
+        qs = qs.filter(service_id=service_filter)
+
+    bookings = list(qs)
 
     total_minutes = CALENDAR_HOURS * 60
     for b in bookings:
@@ -95,6 +110,16 @@ def calendar_view(request):
 
     bookings_by_day = {day: [b for b in bookings if b.cal_day == day] for day in days}
 
+    staff_list = User.objects.filter(tenant=request.user.tenant).exclude(is_superuser=True)
+    services = Service.objects.filter(tenant=request.user.tenant, is_active=True)
+
+    # Build query string to preserve filters when navigating weeks
+    filter_qs = ''
+    if staff_filter:
+        filter_qs += f'&staff={staff_filter}'
+    if service_filter:
+        filter_qs += f'&service={service_filter}'
+
     return render(request, 'bookings/calendar.html', {
         'days': days,
         'bookings_by_day': bookings_by_day,
@@ -103,6 +128,11 @@ def calendar_view(request):
         'hours': range(CALENDAR_START, CALENDAR_END),
         'prev_week': week_offset - 1,
         'next_week': week_offset + 1,
+        'staff_list': staff_list,
+        'services': services,
+        'staff_filter': staff_filter,
+        'service_filter': service_filter,
+        'filter_qs': filter_qs,
     })
 
 

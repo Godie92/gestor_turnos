@@ -1,0 +1,18 @@
+Hola {{ booking.client_name }},
+
+Tu turno ha sido confirmado en {{ tenant_name }}.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Servicio:   {{ booking.service_name }}
+  Fecha:      {{ local_start|date:"d/m/Y" }}
+  Hora:       {{ local_start|date:"H:i" }}{% if booking.staff %}
+  Profesional: {{ booking.staff.get_full_name }}{% endif %}{% if booking.price %}
+  Precio:     ${{ booking.price }}{% endif %}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+{% if booking.notes %}
+Notas: {{ booking.notes }}
+
+{% endif %}
+¡Te esperamos!
+
+{{ tenant_name }}

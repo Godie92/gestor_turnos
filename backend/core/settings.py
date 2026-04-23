@@ -187,3 +187,19 @@ APP_CONFIG = {
     'currency': 'ARS',
     'country': 'Argentina',
 }
+
+# ─────────────────────────────────────────────────────────────
+# EMAIL
+# ─────────────────────────────────────────────────────────────
+# En desarrollo: imprime los emails en la consola del servidor
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# Para producción con Gmail, descomentá y completá:
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com'
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = 'tu@gmail.com'
+# EMAIL_HOST_PASSWORD = 'tu_contrasena_de_app'
+
+DEFAULT_FROM_EMAIL = f"{APP_CONFIG['name']} <noreply@reservapro.com>"
