@@ -1,69 +1,111 @@
 {% extends 'base.html' %}
-{% block title %}{{ title }} - Salon Pro{% endblock %}
+{% block title %}{{ title }} — {{ app.name }}{% endblock %}
 
 {% block content %}
-<div class="max-w-xl">
+<div class="max-w-2xl">
     <div class="flex items-center gap-3 mb-6">
-        <a href="{% url 'booking_list' %}" class="text-gray-400 hover:text-gray-600">← Volver</a>
-        <h2 class="text-2xl font-bold text-gray-900">{{ title }}</h2>
+        <a href="{% url 'booking_list' %}" class="text-gray-400 hover:text-gray-600 text-sm">← Volver</a>
+        <h2 class="text-2xl font-black text-gray-900">{{ title }}</h2>
     </div>
 
-    <div class="bg-white rounded-xl shadow-sm p-8">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
         <form method="post" class="space-y-5">
             {% csrf_token %}
 
             {% if form.non_field_errors %}
-            <div class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">
-                {% for error in form.non_field_errors %}
-                    <p>{{ error }}</p>
-                {% endfor %}
+            <div class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3">
+                {% for e in form.non_field_errors %}<p>{{ e }}</p>{% endfor %}
             </div>
             {% endif %}
 
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">{{ form.client_name.label }}</label>
-                {{ form.client_name }}
-                {% if form.client_name.errors %}
-                <p class="text-red-500 text-xs mt-1">{{ form.client_name.errors.0 }}</p>
-                {% endif %}
+            <!-- Cliente -->
+            <div class="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-xl">
+                <div class="col-span-2">
+                    <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Cliente</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">{{ form.client.label }}</label>
+                    {{ form.client }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">{{ form.client_name.label }}</label>
+                    {{ form.client_name }}
+                </div>
             </div>
 
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">{{ form.service.label }}</label>
-                {{ form.service }}
-                {% if form.service.errors %}
-                <p class="text-red-500 text-xs mt-1">{{ form.service.errors.0 }}</p>
-                {% endif %}
+            <!-- Servicio -->
+            <div class="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-xl">
+                <div class="col-span-2">
+                    <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Servicio</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">{{ form.service.label }}</label>
+                    {{ form.service }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">{{ form.service_name.label }}</label>
+                    {{ form.service_name }}
+                </div>
             </div>
 
+            <!-- Fecha y hora -->
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">{{ form.start_time.label }}</label>
                     {{ form.start_time }}
-                    {% if form.start_time.errors %}
-                    <p class="text-red-500 text-xs mt-1">{{ form.start_time.errors.0 }}</p>
-                    {% endif %}
+                    {% if form.start_time.errors %}<p class="text-red-500 text-xs mt-1">{{ form.start_time.errors.0 }}</p>{% endif %}
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">{{ form.end_time.label }}</label>
                     {{ form.end_time }}
-                    {% if form.end_time.errors %}
-                    <p class="text-red-500 text-xs mt-1">{{ form.end_time.errors.0 }}</p>
-                    {% endif %}
+                    {% if form.end_time.errors %}<p class="text-red-500 text-xs mt-1">{{ form.end_time.errors.0 }}</p>{% endif %}
                 </div>
             </div>
 
+            <!-- Staff, estado y precio -->
+            <div class="grid grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">{{ form.staff.label }}</label>
+                    {{ form.staff }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">{{ form.status.label }}</label>
+                    {{ form.status }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">{{ form.price.label }}</label>
+                    {{ form.price }}
+                </div>
+            </div>
+
+            <!-- Notas -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">{{ form.notes.label }}</label>
+                {{ form.notes }}
+            </div>
+
             <div class="flex gap-3 pt-2">
-                <button type="submit"
-                        class="flex-1 bg-purple-600 text-white py-2.5 rounded-lg font-semibold hover:bg-purple-700 transition">
-                    Guardar
-                </button>
-                <a href="{% url 'booking_list' %}"
-                   class="flex-1 text-center border border-gray-300 text-gray-700 py-2.5 rounded-lg font-medium hover:bg-gray-50 transition">
-                    Cancelar
-                </a>
+                <button type="submit" class="flex-1 bg-purple-600 text-white py-2.5 rounded-lg font-semibold hover:bg-purple-700 transition">Guardar</button>
+                <a href="{% url 'booking_list' %}" class="flex-1 text-center border border-gray-300 text-gray-700 py-2.5 rounded-lg font-medium hover:bg-gray-50 transition">Cancelar</a>
             </div>
         </form>
     </div>
 </div>
+
+<script>
+// Auto-fill service name when selecting from catalog
+document.getElementById('id_service')?.addEventListener('change', function() {
+    const text = this.options[this.selectedIndex].text;
+    if (this.value) {
+        document.getElementById('id_service_name').value = text;
+    }
+});
+// Auto-fill client name when selecting from list
+document.getElementById('id_client')?.addEventListener('change', function() {
+    const text = this.options[this.selectedIndex].text;
+    if (this.value) {
+        document.getElementById('id_client_name').value = text;
+    }
+});
+</script>
 {% endblock %}

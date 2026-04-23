@@ -8,19 +8,11 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         body { font-family: 'Inter', sans-serif; }
-        .form-input {
-            width: 100%;
-            padding: 0.5rem 0.75rem;
-            border: 1px solid #d1d5db;
-            border-radius: 0.375rem;
-            font-size: 0.875rem;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-        .form-input:focus {
-            border-color: #7c3aed;
-            box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
-        }
+        .form-input { width:100%; padding:.5rem .75rem; border:1px solid #d1d5db; border-radius:.375rem; font-size:.875rem; outline:none; transition:border-color .2s; }
+        .form-input:focus { border-color:#7c3aed; box-shadow:0 0 0 2px rgba(124,58,237,.2); }
+        .nav-link { display:flex; align-items:center; gap:.75rem; padding:.5rem .75rem; border-radius:.5rem; font-size:.875rem; font-weight:500; color:#374151; transition:all .15s; }
+        .nav-link:hover { background:#f5f3ff; color:#7c3aed; }
+        .nav-link.active { background:#f5f3ff; color:#7c3aed; font-weight:600; }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen antialiased">
@@ -29,7 +21,7 @@
 <div class="flex min-h-screen">
 
     <!-- Sidebar -->
-    <aside class="w-64 bg-white shadow-sm flex flex-col border-r border-gray-100 fixed h-full">
+    <aside class="w-64 bg-white shadow-sm flex flex-col border-r border-gray-100 fixed h-full overflow-y-auto">
         <div class="p-5 border-b border-gray-100">
             <div class="flex items-center gap-2 mb-1">
                 <span class="text-xl">{{ app.icon }}</span>
@@ -41,68 +33,61 @@
             {% endif %}
         </div>
 
-        <nav class="flex-1 p-4 space-y-1">
-            <a href="{% url 'dashboard' %}"
-               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-700 font-medium hover:bg-purple-50 hover:text-purple-700 transition">
-                🏠 Dashboard
-            </a>
-            <a href="{% url 'booking_list' %}"
-               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-700 font-medium hover:bg-purple-50 hover:text-purple-700 transition">
-                📅 {{ app.booking_label }}s
-            </a>
-            <a href="{% url 'booking_create' %}"
-               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-700 font-medium hover:bg-purple-50 hover:text-purple-700 transition">
-                ➕ Nuevo {{ app.booking_label|lower }}
-            </a>
-            {% if user.is_staff %}
-            <div class="pt-3 mt-3 border-t border-gray-100">
-                <p class="text-xs text-gray-400 font-semibold uppercase tracking-wider px-3 mb-2">Admin</p>
-                <a href="{% url 'superadmin_panel' %}"
-                   class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-700 font-medium hover:bg-orange-50 hover:text-orange-700 transition">
-                    👑 Panel de membresías
-                </a>
+        <nav class="flex-1 p-3 space-y-0.5">
+            <a href="{% url 'dashboard' %}" class="nav-link">🏠 Dashboard</a>
+            <a href="{% url 'calendar' %}" class="nav-link">📅 Calendario</a>
+            <a href="{% url 'booking_list' %}" class="nav-link">📋 Reservas</a>
+            <a href="{% url 'booking_create' %}" class="nav-link">➕ Nueva reserva</a>
+
+            <div class="pt-3 mt-2 border-t border-gray-100">
+                <p class="text-xs text-gray-400 font-semibold uppercase tracking-wider px-3 mb-1">Gestión</p>
+                <a href="{% url 'client_list' %}" class="nav-link">👥 Clientes</a>
+                <a href="{% url 'service_list' %}" class="nav-link">💈 Servicios</a>
+                <a href="{% url 'staff_list' %}" class="nav-link">👤 Profesionales</a>
             </div>
-            {% endif %}
+
+            <div class="pt-3 mt-2 border-t border-gray-100">
+                <p class="text-xs text-gray-400 font-semibold uppercase tracking-wider px-3 mb-1">Análisis</p>
+                <a href="{% url 'stats' %}" class="nav-link">📊 Estadísticas</a>
+            </div>
+
+            <div class="pt-3 mt-2 border-t border-gray-100">
+                <p class="text-xs text-gray-400 font-semibold uppercase tracking-wider px-3 mb-1">Configuración</p>
+                <a href="{% url 'profile' %}" class="nav-link">⚙ Perfil del negocio</a>
+                {% if user.is_staff %}
+                <a href="{% url 'superadmin_panel' %}" class="nav-link">👑 Panel membresías</a>
+                {% endif %}
+            </div>
         </nav>
 
-        <!-- Membresía status -->
+        <!-- Membresía -->
         <div class="p-4 border-t border-gray-100">
             {% with m=user.tenant.membership %}
             {% if m %}
-            {% if m.status == 'trial' %}
-            <div class="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-3">
-                <p class="text-xs font-bold text-blue-700">Período de prueba</p>
-                <p class="text-xs text-blue-600">{{ m.days_remaining }} días restantes</p>
-                <a href="{% url 'payment_checkout' %}" class="block mt-2 text-center text-xs bg-blue-600 text-white py-1.5 rounded-lg font-semibold hover:bg-blue-700 transition">
-                    Contratar plan
-                </a>
-            </div>
-            {% elif m.status == 'active' and m.is_expiring_soon %}
-            <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-3 mb-3">
-                <p class="text-xs font-bold text-yellow-700">⚠ Vence pronto</p>
-                <p class="text-xs text-yellow-600">{{ m.days_remaining }} días restantes</p>
-                <a href="{% url 'payment_checkout' %}" class="block mt-2 text-center text-xs bg-yellow-500 text-white py-1.5 rounded-lg font-semibold hover:bg-yellow-600 transition">
-                    Renovar ahora
-                </a>
-            </div>
-            {% elif m.status == 'unpaid' or m.status == 'expired' %}
-            <div class="bg-red-50 border border-red-200 rounded-xl p-3 mb-3">
-                <p class="text-xs font-bold text-red-700">
-                    {% if m.status == 'expired' %}Membresía vencida{% else %}Pago pendiente{% endif %}
-                </p>
-                <a href="{% url 'payment_checkout' %}" class="block mt-2 text-center text-xs bg-red-600 text-white py-1.5 rounded-lg font-semibold hover:bg-red-700 transition">
-                    Pagar con MercadoPago
-                </a>
-            </div>
-            {% else %}
-            <div class="flex items-center gap-2 px-1 mb-3">
-                <span class="w-2 h-2 bg-green-500 rounded-full"></span>
-                <span class="text-xs text-gray-500">Membresía activa · {{ m.days_remaining }}d</span>
-            </div>
-            {% endif %}
+                {% if m.status == 'trial' %}
+                <div class="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-3">
+                    <p class="text-xs font-bold text-blue-700">Período de prueba</p>
+                    <p class="text-xs text-blue-600">{{ m.days_remaining }} días restantes</p>
+                    <a href="{% url 'payment_checkout' %}" class="block mt-2 text-center text-xs bg-blue-600 text-white py-1.5 rounded-lg font-semibold hover:bg-blue-700 transition">Contratar plan</a>
+                </div>
+                {% elif m.status == 'active' and m.is_expiring_soon %}
+                <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-3 mb-3">
+                    <p class="text-xs font-bold text-yellow-700">⚠ Vence en {{ m.days_remaining }} días</p>
+                    <a href="{% url 'payment_checkout' %}" class="block mt-2 text-center text-xs bg-yellow-500 text-white py-1.5 rounded-lg font-semibold hover:bg-yellow-600 transition">Renovar</a>
+                </div>
+                {% elif m.status == 'unpaid' or m.status == 'expired' %}
+                <div class="bg-red-50 border border-red-200 rounded-xl p-3 mb-3">
+                    <p class="text-xs font-bold text-red-700">{% if m.status == 'expired' %}Membresía vencida{% else %}Pago pendiente{% endif %}</p>
+                    <a href="{% url 'payment_checkout' %}" class="block mt-2 text-center text-xs bg-red-600 text-white py-1.5 rounded-lg font-semibold hover:bg-red-700 transition">Pagar con MercadoPago</a>
+                </div>
+                {% else %}
+                <div class="flex items-center gap-2 px-1 mb-3">
+                    <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                    <span class="text-xs text-gray-500">Activa · {{ m.days_remaining }}d</span>
+                </div>
+                {% endif %}
             {% endif %}
             {% endwith %}
-
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-xs font-semibold text-gray-700">{{ user.username }}</p>
@@ -113,7 +98,6 @@
         </div>
     </aside>
 
-    <!-- Main content -->
     <main class="flex-1 ml-64 p-8 min-h-screen">
         {% block content %}{% endblock %}
     </main>

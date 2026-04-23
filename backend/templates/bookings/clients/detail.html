@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% block title %}{{ client.name }} — {{ app.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl">
+    <div class="flex items-center gap-3 mb-6">
+        <a href="{% url 'client_list' %}" class="text-gray-400 hover:text-gray-600 text-sm">← Clientes</a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div class="md:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div class="flex items-start justify-between mb-4">
+                <div>
+                    <h2 class="text-2xl font-black text-gray-900">{{ client.name }}</h2>
+                    <p class="text-gray-400 text-sm">Cliente desde {{ client.created_at|date:"d/m/Y" }}</p>
+                </div>
+                <a href="{% url 'client_edit' client.pk %}" class="text-sm text-blue-600 hover:underline font-medium">Editar</a>
+            </div>
+            <div class="space-y-2 text-sm">
+                {% if client.phone %}
+                <div class="flex items-center gap-3">
+                    <span class="text-gray-400 w-20">Teléfono</span>
+                    <a href="{{ client.whatsapp_url }}" target="_blank" class="text-green-600 font-medium flex items-center gap-1 hover:underline">
+                        💬 {{ client.phone }}
+                    </a>
+                </div>
+                {% endif %}
+                {% if client.email %}
+                <div class="flex items-center gap-3">
+                    <span class="text-gray-400 w-20">Email</span>
+                    <span class="text-gray-700">{{ client.email }}</span>
+                </div>
+                {% endif %}
+                {% if client.notes %}
+                <div class="flex items-start gap-3 mt-3">
+                    <span class="text-gray-400 w-20">Notas</span>
+                    <span class="text-gray-600">{{ client.notes }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 text-center">
+            <p class="text-4xl font-black text-purple-600">{{ client.total_bookings }}</p>
+            <p class="text-gray-500 text-sm mt-1">visitas totales</p>
+            <a href="{% url 'booking_create' %}" class="block mt-4 bg-purple-600 text-white text-sm font-semibold py-2 rounded-lg hover:bg-purple-700 transition">
+                + Nueva reserva
+            </a>
+        </div>
+    </div>
+
+    <!-- Historial -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100">
+            <h3 class="font-bold text-gray-800">Historial de visitas</h3>
+        </div>
+        {% if bookings %}
+        <table class="w-full text-sm">
+            <thead class="bg-gray-50 border-b text-xs text-gray-500 uppercase tracking-wider">
+                <tr>
+                    <th class="px-6 py-3 text-left">Fecha</th>
+                    <th class="px-6 py-3 text-left">Servicio</th>
+                    <th class="px-6 py-3 text-left">Estado</th>
+                    <th class="px-6 py-3 text-left">Precio</th>
+                    <th class="px-6 py-3 text-left">WhatsApp</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50">
+                {% for b in bookings %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-3 text-gray-700">{{ b.start_time|date:"d/m/Y H:i" }}</td>
+                    <td class="px-6 py-3 text-gray-700">{{ b.service_name }}</td>
+                    <td class="px-6 py-3">
+                        <span class="text-xs font-bold px-2 py-1 rounded-full"
+                              style="background: {{ b.status_color }}20; color: {{ b.status_color }}">
+                            {{ b.get_status_display }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-3 text-gray-600">{% if b.price %}${{ b.price|floatformat:0 }}{% else %}—{% endif %}</td>
+                    <td class="px-6 py-3">
+                        {% with wa=b.whatsapp_reminder_url %}
+                        {% if wa %}
+                        <a href="{{ wa }}" target="_blank" class="text-green-600 text-xs hover:underline">💬 Recordar</a>
+                        {% else %}—{% endif %}
+                        {% endwith %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-center text-gray-400 py-8">Sin visitas registradas.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

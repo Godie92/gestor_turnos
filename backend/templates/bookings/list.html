@@ -1,39 +1,67 @@
 {% extends 'base.html' %}
-{% block title %}Reservas - Salon Pro{% endblock %}
+{% block title %}Reservas — {{ app.name }}{% endblock %}
 
 {% block content %}
 <div class="flex items-center justify-between mb-6">
-    <h2 class="text-2xl font-bold text-gray-900">Reservas</h2>
-    <a href="{% url 'booking_create' %}"
-       class="bg-purple-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-purple-700 transition">
-        + Nueva reserva
-    </a>
+    <h2 class="text-2xl font-black text-gray-900">Reservas</h2>
+    <a href="{% url 'booking_create' %}" class="bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition">+ Nueva reserva</a>
 </div>
 
-<div class="bg-white rounded-xl shadow-sm overflow-hidden">
+<!-- Filtros de estado -->
+<div class="flex flex-wrap gap-2 mb-4">
+    <a href="?" class="px-3 py-1.5 rounded-full text-xs font-semibold border {% if not status_filter %}bg-gray-800 text-white border-gray-800{% else %}bg-white text-gray-600 border-gray-200 hover:border-gray-400{% endif %}">Todas</a>
+    {% for val, label in status_choices %}
+    <a href="?status={{ val }}" class="px-3 py-1.5 rounded-full text-xs font-semibold border {% if status_filter == val %}bg-gray-800 text-white border-gray-800{% else %}bg-white text-gray-600 border-gray-200 hover:border-gray-400{% endif %}">{{ label }}</a>
+    {% endfor %}
+</div>
+
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
     {% if bookings %}
     <table class="w-full text-sm">
-        <thead class="bg-gray-50 border-b">
-            <tr class="text-left text-gray-500">
-                <th class="px-6 py-3 font-medium">Cliente</th>
-                <th class="px-6 py-3 font-medium">Servicio</th>
-                <th class="px-6 py-3 font-medium">Inicio</th>
-                <th class="px-6 py-3 font-medium">Fin</th>
-                <th class="px-6 py-3 font-medium">Acciones</th>
+        <thead class="bg-gray-50 border-b border-gray-100 text-xs text-gray-500 uppercase tracking-wider">
+            <tr>
+                <th class="px-4 py-3 text-left">Cliente</th>
+                <th class="px-4 py-3 text-left">Servicio</th>
+                <th class="px-4 py-3 text-left">Fecha y hora</th>
+                <th class="px-4 py-3 text-left">Profesional</th>
+                <th class="px-4 py-3 text-left">Estado</th>
+                <th class="px-4 py-3 text-left">Precio</th>
+                <th class="px-4 py-3 text-left">Acciones</th>
             </tr>
         </thead>
-        <tbody class="divide-y divide-gray-100">
+        <tbody class="divide-y divide-gray-50">
             {% for b in bookings %}
             <tr class="hover:bg-gray-50 transition">
-                <td class="px-6 py-4 font-medium text-gray-800">{{ b.client_name }}</td>
-                <td class="px-6 py-4 text-gray-600">{{ b.service }}</td>
-                <td class="px-6 py-4 text-gray-600">{{ b.start_time|date:"d/m/Y H:i" }}</td>
-                <td class="px-6 py-4 text-gray-600">{{ b.end_time|date:"d/m/Y H:i" }}</td>
-                <td class="px-6 py-4">
-                    <a href="{% url 'booking_edit' b.pk %}"
-                       class="text-blue-600 hover:text-blue-800 font-medium mr-4">Editar</a>
-                    <a href="{% url 'booking_delete' b.pk %}"
-                       class="text-red-500 hover:text-red-700 font-medium">Eliminar</a>
+                <td class="px-4 py-3">
+                    {% if b.client %}
+                    <a href="{% url 'client_detail' b.client.pk %}" class="font-semibold text-gray-800 hover:text-purple-600">{{ b.client_name }}</a>
+                    {% else %}
+                    <span class="font-semibold text-gray-800">{{ b.client_name }}</span>
+                    {% endif %}
+                </td>
+                <td class="px-4 py-3 text-gray-600">{{ b.service_name }}</td>
+                <td class="px-4 py-3 text-gray-600 whitespace-nowrap">{{ b.start_time|date:"d/m/Y H:i" }}</td>
+                <td class="px-4 py-3 text-gray-500">{{ b.staff.get_full_name|default:b.staff.username|default:"—" }}</td>
+                <td class="px-4 py-3">
+                    <form method="post" action="{% url 'booking_status' b.pk %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                        <select name="status" onchange="this.form.submit()"
+                                class="text-xs font-bold px-2 py-1 rounded-full border-0 cursor-pointer"
+                                style="background: {{ b.status_color }}20; color: {{ b.status_color }}">
+                            {% for val, label in b.STATUS_CHOICES %}
+                            <option value="{{ val }}" {% if b.status == val %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                </td>
+                <td class="px-4 py-3 text-gray-600">{% if b.price %}${{ b.price|floatformat:0 }}{% else %}—{% endif %}</td>
+                <td class="px-4 py-3 flex items-center gap-2">
+                    <a href="{% url 'booking_edit' b.pk %}" class="text-blue-600 hover:underline text-xs font-medium">Editar</a>
+                    {% with wa=b.whatsapp_reminder_url %}
+                    {% if wa %}<a href="{{ wa }}" target="_blank" class="text-green-600 text-xs hover:underline" title="Recordar por WhatsApp">💬</a>{% endif %}
+                    {% endwith %}
+                    <a href="{% url 'booking_delete' b.pk %}" class="text-red-500 hover:underline text-xs font-medium">✕</a>
                 </td>
             </tr>
             {% endfor %}
@@ -42,11 +70,8 @@
     {% else %}
     <div class="text-center py-16">
         <p class="text-4xl mb-4">📅</p>
-        <p class="text-gray-500">No hay reservas todavía.</p>
-        <a href="{% url 'booking_create' %}"
-           class="inline-block mt-4 bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition">
-            Crear primera reserva
-        </a>
+        <p class="text-gray-500 mb-4">No hay reservas{% if status_filter %} con este estado{% endif %}.</p>
+        <a href="{% url 'booking_create' %}" class="inline-block bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition">Crear reserva</a>
     </div>
     {% endif %}
 </div>

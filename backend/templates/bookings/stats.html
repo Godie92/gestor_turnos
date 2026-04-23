@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% block title %}Estadísticas — {{ app.name }}{% endblock %}
+
+{% block content %}
+<h2 class="text-2xl font-black text-gray-900 mb-6">Estadísticas</h2>
+
+<!-- KPIs -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+        <p class="text-sm text-gray-500">Total reservas</p>
+        <p class="text-3xl font-black text-gray-800 mt-1">{{ total }}</p>
+    </div>
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+        <p class="text-sm text-gray-500">Este mes</p>
+        <p class="text-3xl font-black text-purple-600 mt-1">{{ this_month }}</p>
+    </div>
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+        <p class="text-sm text-gray-500">Completadas</p>
+        <p class="text-3xl font-black text-green-600 mt-1">{{ completed }}</p>
+    </div>
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+        <p class="text-sm text-gray-500">Facturado</p>
+        <p class="text-3xl font-black text-gray-800 mt-1">${{ revenue|floatformat:0 }}</p>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+
+    <!-- Por estado -->
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+        <h3 class="font-bold text-gray-800 mb-4">Por estado</h3>
+        <div class="space-y-3">
+            {% with total_for_pct=total|default:1 %}
+            <div class="flex items-center gap-3">
+                <span class="text-xs w-24 text-gray-500">Pendiente</span>
+                <div class="flex-1 bg-gray-100 rounded-full h-3">
+                    <div class="bg-yellow-400 h-3 rounded-full" style="width: {% widthratio by_status.pending total_for_pct 100 %}%"></div>
+                </div>
+                <span class="text-sm font-bold w-8 text-right">{{ by_status.pending }}</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="text-xs w-24 text-gray-500">Confirmada</span>
+                <div class="flex-1 bg-gray-100 rounded-full h-3">
+                    <div class="bg-blue-500 h-3 rounded-full" style="width: {% widthratio by_status.confirmed total_for_pct 100 %}%"></div>
+                </div>
+                <span class="text-sm font-bold w-8 text-right">{{ by_status.confirmed }}</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="text-xs w-24 text-gray-500">Completada</span>
+                <div class="flex-1 bg-gray-100 rounded-full h-3">
+                    <div class="bg-green-500 h-3 rounded-full" style="width: {% widthratio by_status.completed total_for_pct 100 %}%"></div>
+                </div>
+                <span class="text-sm font-bold w-8 text-right">{{ by_status.completed }}</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="text-xs w-24 text-gray-500">Cancelada</span>
+                <div class="flex-1 bg-gray-100 rounded-full h-3">
+                    <div class="bg-red-400 h-3 rounded-full" style="width: {% widthratio by_status.cancelled total_for_pct 100 %}%"></div>
+                </div>
+                <span class="text-sm font-bold w-8 text-right">{{ by_status.cancelled }}</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="text-xs w-24 text-gray-500">No asistió</span>
+                <div class="flex-1 bg-gray-100 rounded-full h-3">
+                    <div class="bg-gray-400 h-3 rounded-full" style="width: {% widthratio by_status.no_show total_for_pct 100 %}%"></div>
+                </div>
+                <span class="text-sm font-bold w-8 text-right">{{ by_status.no_show }}</span>
+            </div>
+            {% endwith %}
+        </div>
+    </div>
+
+    <!-- Por día de semana -->
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+        <h3 class="font-bold text-gray-800 mb-4">Por día de la semana</h3>
+        <div class="space-y-2">
+            {% for d in by_weekday %}
+            <div class="flex items-center gap-3">
+                <span class="text-xs w-16 text-gray-500">{{ d.name|slice:":3" }}</span>
+                <div class="flex-1 bg-gray-100 rounded-full h-3">
+                    <div class="bg-purple-500 h-3 rounded-full" style="width: {% widthratio d.count max_day 100 %}%"></div>
+                </div>
+                <span class="text-sm font-bold w-8 text-right text-gray-700">{{ d.count }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+    <!-- Top servicios -->
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+        <h3 class="font-bold text-gray-800 mb-4">Servicios más pedidos</h3>
+        {% if top_services %}
+        <div class="space-y-3">
+            {% for svc in top_services %}
+            <div class="flex items-center gap-3">
+                <span class="text-xs text-gray-600 flex-1 truncate">{{ svc.service_name }}</span>
+                <div class="w-32 bg-gray-100 rounded-full h-2.5">
+                    <div class="bg-purple-500 h-2.5 rounded-full" style="width: {% widthratio svc.count max_svc 100 %}%"></div>
+                </div>
+                <span class="text-sm font-bold text-gray-700 w-6 text-right">{{ svc.count }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-400 text-sm">Sin datos aún.</p>
+        {% endif %}
+    </div>
+
+    <!-- Revenue mensual -->
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+        <h3 class="font-bold text-gray-800 mb-4">Facturación últimos 6 meses</h3>
+        <div class="flex items-end gap-2 h-32">
+            {% for m in monthly %}
+            <div class="flex-1 flex flex-col items-center gap-1">
+                <span class="text-xs text-gray-500">${{ m.value|floatformat:0 }}</span>
+                <div class="w-full bg-purple-100 rounded-t-lg relative" style="height: {% widthratio m.value max_monthly 100 %}px; min-height: 4px">
+                    <div class="absolute inset-0 bg-purple-500 rounded-t-lg opacity-80"></div>
+                </div>
+                <span class="text-xs font-semibold text-gray-500">{{ m.label }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Top clientes -->
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+        <h3 class="font-bold text-gray-800 mb-4">Clientes más frecuentes</h3>
+        {% if top_clients %}
+        <div class="space-y-2">
+            {% for c in top_clients %}
+            <div class="flex items-center justify-between py-1.5 border-b border-gray-50 last:border-0">
+                <span class="text-sm text-gray-700">{{ c.client_name }}</span>
+                <span class="text-sm font-bold text-purple-600">{{ c.count }} visitas</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-400 text-sm">Sin datos aún.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

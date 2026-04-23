@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block title %}Clientes — {{ app.name }}{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+    <h2 class="text-2xl font-black text-gray-900">Clientes</h2>
+    <a href="{% url 'client_create' %}" class="bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition">+ Nuevo cliente</a>
+</div>
+
+<form method="get" class="mb-4">
+    <input type="text" name="q" value="{{ q }}" placeholder="Buscar por nombre o teléfono..."
+           class="form-input max-w-sm" onchange="this.form.submit()">
+</form>
+
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    {% if clients %}
+    <table class="w-full text-sm">
+        <thead class="bg-gray-50 border-b border-gray-100">
+            <tr class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-3">Cliente</th>
+                <th class="px-6 py-3">Teléfono</th>
+                <th class="px-6 py-3">Email</th>
+                <th class="px-6 py-3">Visitas</th>
+                <th class="px-6 py-3">Acciones</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-50">
+            {% for client in clients %}
+            <tr class="hover:bg-gray-50 transition">
+                <td class="px-6 py-4">
+                    <a href="{% url 'client_detail' client.pk %}" class="font-semibold text-gray-800 hover:text-purple-600">{{ client.name }}</a>
+                </td>
+                <td class="px-6 py-4">
+                    {% if client.whatsapp_url %}
+                    <a href="{{ client.whatsapp_url }}" target="_blank" class="flex items-center gap-1 text-green-600 hover:text-green-700 font-medium">
+                        <span>💬</span> {{ client.phone }}
+                    </a>
+                    {% else %}
+                    <span class="text-gray-400">—</span>
+                    {% endif %}
+                </td>
+                <td class="px-6 py-4 text-gray-500">{{ client.email|default:"—" }}</td>
+                <td class="px-6 py-4">
+                    <span class="bg-purple-100 text-purple-700 text-xs font-bold px-2 py-1 rounded-full">{{ client.total_bookings }}</span>
+                </td>
+                <td class="px-6 py-4 flex gap-3">
+                    <a href="{% url 'client_detail' client.pk %}" class="text-blue-600 hover:underline text-xs font-medium">Ver</a>
+                    <a href="{% url 'client_edit' client.pk %}" class="text-gray-500 hover:underline text-xs font-medium">Editar</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="text-center py-16">
+        <p class="text-4xl mb-4">👥</p>
+        <p class="text-gray-500 mb-4">{% if q %}Sin resultados para "{{ q }}".{% else %}No hay clientes registrados.{% endif %}</p>
+        {% if not q %}
+        <a href="{% url 'client_create' %}" class="inline-block bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition">Agregar primer cliente</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

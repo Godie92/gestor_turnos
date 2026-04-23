@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}Servicios — {{ app.name }}{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+    <h2 class="text-2xl font-black text-gray-900">Catálogo de servicios</h2>
+    <a href="{% url 'service_create' %}" class="bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition">+ Nuevo servicio</a>
+</div>
+
+{% if services %}
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    {% for svc in services %}
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-4 h-4 rounded-full" style="background: {{ svc.color }}"></div>
+                <h3 class="font-bold text-gray-800">{{ svc.name }}</h3>
+            </div>
+            {% if not svc.is_active %}
+            <span class="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Inactivo</span>
+            {% endif %}
+        </div>
+        {% if svc.description %}
+        <p class="text-sm text-gray-500">{{ svc.description }}</p>
+        {% endif %}
+        <div class="flex gap-4 text-sm">
+            <span class="font-bold text-gray-800">${{ svc.price|floatformat:0 }}</span>
+            <span class="text-gray-400">·</span>
+            <span class="text-gray-500">{{ svc.duration_display }}</span>
+            <span class="text-gray-400">·</span>
+            <span class="text-gray-500">{{ svc.bookings.count }} reservas</span>
+        </div>
+        <div class="flex gap-2 pt-1 border-t border-gray-50">
+            <a href="{% url 'service_edit' svc.pk %}" class="text-xs text-blue-600 hover:underline font-medium">Editar</a>
+            <form method="post" action="{% url 'service_delete' svc.pk %}" class="inline" onsubmit="return confirm('¿Eliminar este servicio?')">
+                {% csrf_token %}
+                <button type="submit" class="text-xs text-red-500 hover:underline font-medium">Eliminar</button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="bg-white rounded-xl p-16 text-center shadow-sm border border-gray-100">
+    <p class="text-4xl mb-4">💈</p>
+    <p class="text-gray-500 mb-4">No tenés servicios cargados todavía.</p>
+    <a href="{% url 'service_create' %}" class="inline-block bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition">Crear primer servicio</a>
+</div>
+{% endif %}
+{% endblock %}

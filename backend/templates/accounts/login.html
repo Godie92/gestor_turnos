@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
-{% block title %}Iniciar sesión - Salon Pro{% endblock %}
+{% block title %}Iniciar sesión — {{ app.name }}{% endblock %}
 
 {% block auth_content %}
 <div class="w-full max-w-md">
     <div class="text-center mb-8">
-        <div class="text-4xl mb-2">✂</div>
-        <h1 class="text-2xl font-bold text-gray-900">Salon Pro</h1>
-        <p class="text-gray-500 mt-1">Iniciá sesión en tu salón</p>
+        <div class="text-4xl mb-2">{{ app.icon }}</div>
+        <h1 class="text-2xl font-bold text-gray-900">{{ app.name }}</h1>
+        <p class="text-gray-500 mt-1">Iniciá sesión en tu cuenta</p>
     </div>
 
     <div class="bg-white rounded-2xl shadow-md p-8">
@@ -15,36 +15,48 @@
 
             {% if form.non_field_errors %}
             <div class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">
-                {{ form.non_field_errors }}
+                Usuario o contraseña incorrectos.
             </div>
             {% endif %}
 
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Usuario</label>
                 {{ form.username }}
-                {% if form.username.errors %}
-                <p class="text-red-500 text-xs mt-1">{{ form.username.errors.0 }}</p>
-                {% endif %}
             </div>
 
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
                 {{ form.password }}
-                {% if form.password.errors %}
-                <p class="text-red-500 text-xs mt-1">{{ form.password.errors.0 }}</p>
-                {% endif %}
             </div>
 
             <button type="submit"
-                    class="w-full bg-purple-600 text-white py-2.5 rounded-lg font-semibold hover:bg-purple-700 transition mt-2">
+                    class="w-full bg-purple-600 text-white py-2.5 rounded-lg font-semibold hover:bg-purple-700 transition">
                 Iniciar sesión
             </button>
         </form>
 
-        <p class="text-center text-sm text-gray-500 mt-6">
+        <!-- Separador -->
+        <div class="flex items-center gap-3 my-5">
+            <div class="flex-1 h-px bg-gray-200"></div>
+            <span class="text-xs text-gray-400">o</span>
+            <div class="flex-1 h-px bg-gray-200"></div>
+        </div>
+
+        <!-- Demo -->
+        <a href="{% url 'demo' %}"
+           class="flex items-center justify-center gap-2 w-full border-2 border-dashed border-purple-200 text-purple-600 py-2.5 rounded-lg font-semibold hover:bg-purple-50 transition text-sm">
+            ▶ Probar demo sin registrarse
+        </a>
+
+        <p class="text-center text-sm text-gray-500 mt-5">
             ¿No tenés cuenta?
-            <a href="{% url 'register' %}" class="text-purple-600 font-medium hover:underline">Registrá tu salón</a>
+            <a href="{% url 'register' %}" class="text-purple-600 font-medium hover:underline">Registrá tu negocio</a>
         </p>
     </div>
+
+    <!-- Info para el admin -->
+    <p class="text-center text-xs text-gray-400 mt-4">
+        Si sos administrador, iniciá sesión con tu usuario y te llevaremos al panel de control.
+    </p>
 </div>
 {% endblock %}

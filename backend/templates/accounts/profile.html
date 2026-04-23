@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}Perfil del negocio — {{ app.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-lg">
+    <h2 class="text-2xl font-black text-gray-900 mb-6">Perfil del negocio</h2>
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+        <form method="post" class="space-y-5">
+            {% csrf_token %}
+            {% for field in form %}
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}<p class="text-red-500 text-xs mt-1">{{ field.errors.0 }}</p>{% endif %}
+            </div>
+            {% endfor %}
+            <div class="flex gap-3 pt-2">
+                <button type="submit" class="flex-1 bg-purple-600 text-white py-2.5 rounded-lg font-semibold hover:bg-purple-700 transition">Guardar cambios</button>
+                <a href="{% url 'dashboard' %}" class="flex-1 text-center border border-gray-300 text-gray-700 py-2.5 rounded-lg font-medium hover:bg-gray-50 transition">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
