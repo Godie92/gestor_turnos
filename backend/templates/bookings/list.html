@@ -41,7 +41,7 @@
                 </td>
                 <td class="px-4 py-3 text-gray-600">{{ b.service_name }}</td>
                 <td class="px-4 py-3 text-gray-600 whitespace-nowrap">{{ b.start_time|date:"d/m/Y H:i" }}</td>
-                <td class="px-4 py-3 text-gray-500">{{ b.staff.get_full_name|default:b.staff.username|default:"—" }}</td>
+                <td class="px-4 py-3 text-gray-500">{% if b.staff %}{{ b.staff.get_full_name|default:b.staff.username }}{% else %}—{% endif %}</td>
                 <td class="px-4 py-3">
                     <form method="post" action="{% url 'booking_status' b.pk %}">
                         {% csrf_token %}
