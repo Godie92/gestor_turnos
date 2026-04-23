@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(.venv/Scripts/pip install *)",
+      "Bash(\"c:/Users/diego/OneDrive/Escritorio/salon-pro/.venv/Scripts/python.exe\" manage.py check)"
+    ]
+  }
+}

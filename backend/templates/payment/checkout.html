@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}Pagar membresía — Salon Pro{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto">
+    <h2 class="text-2xl font-black text-gray-900 mb-2">Pagar membresía</h2>
+    <p class="text-gray-500 mb-8">Elegí tu plan y pagá de forma segura con MercadoPago.</p>
+
+    <!-- Selector de plan -->
+    <div class="grid grid-cols-2 gap-4 mb-8">
+        <a href="?plan=monthly"
+           class="block border-2 rounded-2xl p-5 text-center transition {% if plan == 'monthly' %}border-purple-600 bg-purple-50{% else %}border-gray-200 hover:border-purple-300{% endif %}">
+            <div class="font-bold text-lg text-gray-800">Mensual</div>
+            <div class="text-2xl font-black text-purple-700 mt-1">$5.000</div>
+            <div class="text-xs text-gray-400 mt-1">ARS por mes</div>
+        </a>
+        <a href="?plan=yearly"
+           class="block border-2 rounded-2xl p-5 text-center transition relative {% if plan == 'yearly' %}border-purple-600 bg-purple-50{% else %}border-gray-200 hover:border-purple-300{% endif %}">
+            {% if plan == 'yearly' or True %}
+            <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-purple-600 text-white text-xs font-bold px-3 py-0.5 rounded-full">2 meses gratis</div>
+            {% endif %}
+            <div class="font-bold text-lg text-gray-800">Anual</div>
+            <div class="text-2xl font-black text-purple-700 mt-1">$50.000</div>
+            <div class="text-xs text-gray-400 mt-1">ARS por año</div>
+        </a>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+        <div class="flex items-center justify-between mb-6 pb-6 border-b">
+            <div>
+                <p class="font-semibold text-gray-800">Plan {{ plan_label }}</p>
+                <p class="text-sm text-gray-500">{{ user.tenant.name }}</p>
+            </div>
+            <div class="text-right">
+                <p class="text-2xl font-black text-gray-900">${{ amount|floatformat:0 }}</p>
+                <p class="text-xs text-gray-400">ARS</p>
+            </div>
+        </div>
+
+        {% if error %}
+        <div class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3 mb-4">
+            Error al conectar con MercadoPago. Verificá la configuración e intentá de nuevo.
+        </div>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit"
+                    class="w-full flex items-center justify-center gap-3 bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 rounded-xl transition text-base shadow-lg">
+                <img src="https://http2.mlstatic.com/frontend-assets/ui-navigation/5.19.5/mercadopago/favicon.png"
+                     alt="MP" class="w-6 h-6 rounded">
+                Pagar con MercadoPago
+            </button>
+        </form>
+
+        <p class="text-center text-xs text-gray-400 mt-4">
+            🔒 Pago seguro procesado por MercadoPago
+        </p>
+
+        <div class="mt-6 pt-6 border-t">
+            <a href="{% url 'dashboard' %}" class="text-sm text-gray-400 hover:text-gray-600">← Volver al dashboard</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

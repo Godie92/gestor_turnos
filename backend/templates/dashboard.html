@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard - {{ user.tenant.name }}{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h2 class="text-2xl font-bold text-gray-900">Bienvenido, {{ user.username }} 👋</h2>
+    <p class="text-gray-500">{{ user.tenant.name }}</p>
+</div>
+
+<!-- Stats -->
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+    <div class="bg-white rounded-xl shadow-sm p-6">
+        <p class="text-sm text-gray-500">Reservas hoy</p>
+        <p class="text-3xl font-bold text-purple-600 mt-1">{{ today_count }}</p>
+    </div>
+    <div class="bg-white rounded-xl shadow-sm p-6">
+        <p class="text-sm text-gray-500">Próximas reservas</p>
+        <p class="text-3xl font-bold text-blue-600 mt-1">{{ upcoming|length }}</p>
+    </div>
+    <div class="bg-white rounded-xl shadow-sm p-6">
+        <p class="text-sm text-gray-500">Total reservas</p>
+        <p class="text-3xl font-bold text-gray-700 mt-1">{{ total }}</p>
+    </div>
+</div>
+
+<!-- Reservas de hoy -->
+<div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+    <div class="flex items-center justify-between mb-4">
+        <h3 class="font-bold text-gray-800">Reservas de hoy</h3>
+        <a href="{% url 'booking_create' %}"
+           class="bg-purple-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-purple-700 transition">
+            + Nueva reserva
+        </a>
+    </div>
+
+    {% if bookings_today %}
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="text-left text-gray-500 border-b">
+                    <th class="pb-2 font-medium">Hora</th>
+                    <th class="pb-2 font-medium">Cliente</th>
+                    <th class="pb-2 font-medium">Servicio</th>
+                    <th class="pb-2 font-medium">Acciones</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                {% for b in bookings_today %}
+                <tr>
+                    <td class="py-3 text-gray-600">
+                        {{ b.start_time|date:"H:i" }} - {{ b.end_time|date:"H:i" }}
+                    </td>
+                    <td class="py-3 font-medium text-gray-800">{{ b.client_name }}</td>
+                    <td class="py-3 text-gray-600">{{ b.service }}</td>
+                    <td class="py-3">
+                        <a href="{% url 'booking_edit' b.pk %}" class="text-blue-600 hover:underline mr-3">Editar</a>
+                        <a href="{% url 'booking_delete' b.pk %}" class="text-red-500 hover:underline">Eliminar</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-gray-400 text-sm text-center py-6">No hay reservas para hoy.</p>
+    {% endif %}
+</div>
+
+<!-- Próximas reservas -->
+{% if upcoming %}
+<div class="bg-white rounded-xl shadow-sm p-6">
+    <h3 class="font-bold text-gray-800 mb-4">Próximas reservas</h3>
+    <div class="space-y-3">
+        {% for b in upcoming %}
+        <div class="flex items-center justify-between py-2 border-b last:border-0">
+            <div>
+                <p class="font-medium text-gray-800">{{ b.client_name }}</p>
+                <p class="text-sm text-gray-500">{{ b.service }}</p>
+            </div>
+            <div class="text-right">
+                <p class="text-sm font-medium text-gray-700">{{ b.start_time|date:"d/m/Y" }}</p>
+                <p class="text-xs text-gray-400">{{ b.start_time|date:"H:i" }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

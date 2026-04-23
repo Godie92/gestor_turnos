@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}Reservas - Salon Pro{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+    <h2 class="text-2xl font-bold text-gray-900">Reservas</h2>
+    <a href="{% url 'booking_create' %}"
+       class="bg-purple-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-purple-700 transition">
+        + Nueva reserva
+    </a>
+</div>
+
+<div class="bg-white rounded-xl shadow-sm overflow-hidden">
+    {% if bookings %}
+    <table class="w-full text-sm">
+        <thead class="bg-gray-50 border-b">
+            <tr class="text-left text-gray-500">
+                <th class="px-6 py-3 font-medium">Cliente</th>
+                <th class="px-6 py-3 font-medium">Servicio</th>
+                <th class="px-6 py-3 font-medium">Inicio</th>
+                <th class="px-6 py-3 font-medium">Fin</th>
+                <th class="px-6 py-3 font-medium">Acciones</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+            {% for b in bookings %}
+            <tr class="hover:bg-gray-50 transition">
+                <td class="px-6 py-4 font-medium text-gray-800">{{ b.client_name }}</td>
+                <td class="px-6 py-4 text-gray-600">{{ b.service }}</td>
+                <td class="px-6 py-4 text-gray-600">{{ b.start_time|date:"d/m/Y H:i" }}</td>
+                <td class="px-6 py-4 text-gray-600">{{ b.end_time|date:"d/m/Y H:i" }}</td>
+                <td class="px-6 py-4">
+                    <a href="{% url 'booking_edit' b.pk %}"
+                       class="text-blue-600 hover:text-blue-800 font-medium mr-4">Editar</a>
+                    <a href="{% url 'booking_delete' b.pk %}"
+                       class="text-red-500 hover:text-red-700 font-medium">Eliminar</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="text-center py-16">
+        <p class="text-4xl mb-4">📅</p>
+        <p class="text-gray-500">No hay reservas todavía.</p>
+        <a href="{% url 'booking_create' %}"
+           class="inline-block mt-4 bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition">
+            Crear primera reserva
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
