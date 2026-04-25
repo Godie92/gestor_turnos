@@ -1,0 +1,171 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Turnos{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1rem">
+    <h1 class="page-title" style="margin:0">📅 Turnos</h1>
+    <form method="get" style="display:flex;align-items:center;gap:.5rem;margin-left:auto;flex-wrap:wrap">
+      <a href="?date={{ prev_date }}" class="btn btn-ghost btn-sm">← Ant</a>
+      <input type="date" name="date" value="{{ selected_date.isoformat() }}"
+             class="form-control" style="max-width:160px" onchange="this.form.submit()">
+      <a href="?date={{ next_date }}" class="btn btn-ghost btn-sm">Sig →</a>
+      <a href="?date={{ today }}" class="btn btn-ghost btn-sm">Hoy</a>
+    </form>
+  </div>
+
+  <!-- Búsqueda y filtros -->
+  <form method="get" style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.5rem">
+    <input type="hidden" name="date" value="{{ selected_date.isoformat() }}">
+    <input type="text" name="q" value="{{ search }}" class="form-control"
+           placeholder="Buscar por nombre o teléfono..." style="max-width:240px">
+    <select name="status" class="form-control" style="max-width:160px">
+      <option value="">Todos los estados</option>
+      <option value="confirmed" {{ 'selected' if status_filter == 'confirmed' }}>Confirmado</option>
+      <option value="arrived"   {{ 'selected' if status_filter == 'arrived' }}>Llegó</option>
+      <option value="in_service"{{ 'selected' if status_filter == 'in_service' }}>En atención</option>
+      <option value="done"      {{ 'selected' if status_filter == 'done' }}>Finalizado</option>
+      <option value="cancelled" {{ 'selected' if status_filter == 'cancelled' }}>Cancelado</option>
+    </select>
+    <button type="submit" class="btn btn-ghost btn-sm">Filtrar</button>
+    {% if search or status_filter %}
+    <a href="?date={{ selected_date.isoformat() }}" class="btn btn-ghost btn-sm">✕ Limpiar</a>
+    {% endif %}
+  </form>
+
+  <div class="card">
+    {% if appointments %}
+    <table>
+      <thead>
+        <tr>
+          <th>Hora</th>
+          <th>Cliente</th>
+          <th>Teléfono</th>
+          <th>Servicio</th>
+          <th>Profesional</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for appt in appointments %}
+        <tr>
+          <td><strong>{{ appt.scheduled_at.strftime('%H:%M') }}</strong></td>
+          <td>{{ appt.client_name }}</td>
+          <td>{{ appt.client_phone }}</td>
+          <td>{{ appt.service.name }}</td>
+          <td>{{ appt.professional.name if appt.professional else '—' }}</td>
+          <td><span class="badge badge-{{ appt.status }}">{{ appt.status_label }}</span></td>
+          <td>
+            <div style="display:flex;gap:.4rem">
+              {% if appt.status == 'confirmed' %}
+              <form method="post" action="{{ url_for('admin.appointment_arrived', slug=tenant.slug, appt_id=appt.id) }}">
+                <button type="submit" class="btn btn-success btn-sm">✅ Llegó</button>
+              </form>
+              <button type="button" class="btn btn-info btn-sm"
+                      onclick="openReschedule({{ appt.id }}, '{{ appt.scheduled_at.strftime('%Y-%m-%d') }}', '{{ appt.scheduled_at.strftime('%H:%M') }}')">
+                📅 Reagendar
+              </button>
+              <form method="post" action="{{ url_for('admin.appointment_cancel', slug=tenant.slug, appt_id=appt.id) }}"
+                    onsubmit="return confirm('¿Cancelar este turno?')">
+                <button type="submit" class="btn btn-danger btn-sm">✕ Cancelar</button>
+              </form>
+              {% elif appt.status == 'arrived' %}
+              <span style="color:var(--color-text-muted);font-size:.85rem">En cola</span>
+              {% endif %}
+              <button type="button" class="btn btn-ghost btn-sm"
+                      onclick="openNotes({{ appt.id }}, {{ appt.notes|tojson or '\"\"' }})">
+                📝
+              </button>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div style="text-align:center;padding:3rem;color:var(--color-text-muted)">
+      Sin turnos para el {{ selected_date.strftime('%d/%m/%Y') }}.
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+<!-- Modal reagendar -->
+<div id="reschedule-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);
+     z-index:200;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:14px;padding:1.75rem;width:100%;max-width:380px;
+              box-shadow:0 8px 40px rgba(0,0,0,.2);margin:1rem">
+    <h3 style="margin-bottom:1rem;font-size:1rem">📅 Reagendar turno</h3>
+    <form method="post" id="reschedule-form">
+      <div class="form-group">
+        <label>Nueva fecha</label>
+        <input type="date" name="new_date" id="rs-date" class="form-control" required>
+      </div>
+      <div class="form-group">
+        <label>Nueva hora</label>
+        <input type="time" name="new_time" id="rs-time" class="form-control" required>
+      </div>
+      <div style="display:flex;gap:.75rem;margin-top:1rem">
+        <button type="submit" class="btn btn-primary">Guardar</button>
+        <button type="button" class="btn btn-ghost" onclick="closeReschedule()">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal notas -->
+<div id="notes-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);
+     z-index:200;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:14px;padding:1.75rem;width:100%;max-width:420px;
+              box-shadow:0 8px 40px rgba(0,0,0,.2);margin:1rem">
+    <h3 style="margin-bottom:1rem;font-size:1rem">📝 Notas del turno</h3>
+    <form method="post" id="notes-form">
+      <input type="hidden" name="action" value="notes">
+      <textarea name="notes" id="notes-text" class="form-control"
+                rows="4" placeholder="Anotaciones internas sobre este turno..."
+                style="resize:vertical;margin-bottom:1rem"></textarea>
+      <div style="display:flex;gap:.75rem">
+        <button type="submit" class="btn btn-primary">Guardar</button>
+        <button type="button" class="btn btn-ghost" onclick="closeNotes()">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% block scripts %}
+<script>
+  const sel = document.querySelector('input[type=date]');
+  sel.addEventListener('change', () => sel.form.submit());
+
+  function openReschedule(id, date, time) {
+    document.getElementById('reschedule-form').action =
+      '{{ url_for("admin.appointment_reschedule", slug=tenant.slug, appt_id=0) }}'.replace('/0/', '/' + id + '/');
+    document.getElementById('rs-date').value = date;
+    document.getElementById('rs-time').value = time;
+    document.getElementById('reschedule-modal').style.display = 'flex';
+  }
+  function closeReschedule() {
+    document.getElementById('reschedule-modal').style.display = 'none';
+  }
+  document.getElementById('reschedule-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeReschedule();
+  });
+
+  function openNotes(id, text) {
+    document.getElementById('notes-form').action =
+      '{{ url_for("admin.appointment_notes", slug=tenant.slug, appt_id=0) }}'.replace('/0/', '/' + id + '/');
+    document.getElementById('notes-text').value = text || '';
+    const modal = document.getElementById('notes-modal');
+    modal.style.display = 'flex';
+    document.getElementById('notes-text').focus();
+  }
+  function closeNotes() {
+    document.getElementById('notes-modal').style.display = 'none';
+  }
+  document.getElementById('notes-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeNotes();
+  });
+</script>
+{% endblock %}

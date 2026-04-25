@@ -1,0 +1,116 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Cola{% endblock %}
+
+{% block extra_head %}
+<style>
+  .add-form { display: flex; gap: .75rem; flex-wrap: wrap; align-items: flex-end; }
+  .add-form .form-group { margin-bottom: 0; }
+  .slots-container { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .5rem; }
+  .empty-queue { text-align: center; padding: 3rem; color: var(--color-text-muted); font-size: 1.1rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap">
+    <h1 class="page-title" style="margin:0">Cola de espera</h1>
+    <span class="badge badge-waiting" style="font-size:.9rem">
+      <span id="waiting-count">{{ snapshot.waiting_count }}</span> esperando
+    </span>
+    <span style="color:var(--color-text-muted);font-size:.85rem" id="avg-wait-label">
+      ~<span id="avg-min">{{ snapshot.avg_service_min }}</span> min por turno
+    </span>
+  </div>
+
+  <!-- En atención -->
+  {% if snapshot.current %}
+  <div class="card" style="border-left:4px solid var(--color-success)">
+    <div class="card-header">✅ En atención ahora</div>
+    <div style="display:flex;align-items:center;gap:1rem">
+      <div style="font-size:1.3rem;font-weight:700" id="in-service-name">{{ snapshot.current.client_name }}</div>
+      <div style="color:var(--color-text-muted)">{{ snapshot.current.service_name }}</div>
+      <form method="post" action="{{ url_for('admin.queue_done', slug=tenant.slug, entry_id=snapshot.current.id) }}" style="margin-left:auto">
+        <button type="submit" class="btn btn-success">✓ Finalizar</button>
+      </form>
+    </div>
+  </div>
+  {% else %}
+  <div class="card" style="border-left:4px solid var(--color-border)">
+    <div style="color:var(--color-text-muted)" id="in-service-name">Sin atención activa</div>
+  </div>
+  {% endif %}
+
+  <!-- Agregar walk-in -->
+  <div class="card">
+    <div class="card-header">➕ Agregar cliente</div>
+    <form method="post" action="{{ url_for('admin.queue_add', slug=tenant.slug) }}" class="add-form">
+      <div class="form-group">
+        <label>Nombre *</label>
+        <input type="text" name="client_name" class="form-control" placeholder="Nombre del cliente" required>
+      </div>
+      <div class="form-group">
+        <label>Teléfono</label>
+        <input type="tel" name="client_phone" class="form-control" placeholder="+54911...">
+      </div>
+      <div class="form-group">
+        <label>Servicio</label>
+        <select name="service_name" class="form-control">
+          <option value="">— Sin especificar —</option>
+          {% for s in services %}
+          <option value="{{ s.name }}">{{ s.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      {% if professionals %}
+      <div class="form-group">
+        <label>Profesional</label>
+        <select name="professional_id" class="form-control">
+          <option value="">— Cualquiera —</option>
+          {% for p in professionals %}
+          <option value="{{ p.id }}">{{ p.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      {% endif %}
+      <button type="submit" class="btn btn-primary">Agregar</button>
+    </form>
+  </div>
+
+  <!-- Lista de cola -->
+  <div id="queue-panel" data-slug="{{ tenant.slug }}">
+    {% if active %}
+      {% for entry in active %}
+      <div class="queue-item {{ 'is-in-service' if entry.status == 'in_service' else ('is-called' if entry.status == 'called' else '') }}">
+        <div class="queue-pos">{{ entry.position }}</div>
+        <div class="queue-info">
+          <div class="name">{{ entry.client_name }}</div>
+          <div class="meta">
+            {{ entry.service_name or '—' }}
+            {% if entry.client_phone %} · {{ entry.client_phone }}{% endif %}
+            {% if entry.professional %} · {{ entry.professional.name }}{% endif %}
+            · <span class="badge badge-{{ entry.status }}">{{ entry.status_label }}</span>
+          </div>
+        </div>
+        <div class="queue-actions">
+          {% if entry.status == 'waiting' %}
+            <button class="btn btn-info btn-sm" data-action="llamar" data-id="{{ entry.id }}">📢 Llamar</button>
+            <button class="btn btn-danger btn-sm" data-action="cancelar" data-id="{{ entry.id }}">✕</button>
+          {% elif entry.status == 'called' %}
+            <button class="btn btn-success btn-sm" data-action="iniciar" data-id="{{ entry.id }}">▶ Iniciar</button>
+            <button class="btn btn-danger btn-sm" data-action="cancelar" data-id="{{ entry.id }}">✕</button>
+          {% elif entry.status == 'in_service' %}
+            <button class="btn btn-success btn-sm" data-action="finalizar" data-id="{{ entry.id }}">✓ Listo</button>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-queue">🎉 La cola está vacía</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/admin-queue.js') }}"></script>
+{% endblock %}

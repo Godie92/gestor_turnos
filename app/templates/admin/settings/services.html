@@ -1,0 +1,87 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Servicios{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h1 class="page-title">⚙️ Servicios</h1>
+
+  <div style="display:flex;gap:.5rem;margin-bottom:1.5rem;flex-wrap:wrap">
+    <a href="{{ url_for('admin.settings_general', slug=tenant.slug) }}" class="btn btn-ghost btn-sm">General</a>
+    <a href="{{ url_for('admin.settings_services', slug=tenant.slug) }}" class="btn btn-primary btn-sm">Servicios</a>
+    <a href="{{ url_for('admin.settings_professionals', slug=tenant.slug) }}" class="btn btn-ghost btn-sm">Profesionales</a>
+    <a href="{{ url_for('admin.settings_hours', slug=tenant.slug) }}" class="btn btn-ghost btn-sm">Horarios</a>
+    <a href="{{ url_for('admin.settings_blocked', slug=tenant.slug) }}" class="btn btn-ghost btn-sm">Bloqueos</a>
+    <a href="{{ url_for('admin.settings_staff', slug=tenant.slug) }}" class="btn btn-ghost btn-sm">Usuarios</a>
+  </div>
+
+  <div class="card">
+    <div class="card-header">Agregar servicio</div>
+    <form method="post" style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:flex-end">
+      <input type="hidden" name="action" value="add">
+      <div class="form-group" style="margin:0;flex:2;min-width:150px">
+        <label>Nombre</label>
+        <input type="text" name="name" class="form-control" placeholder="Ej: Manicura" required>
+      </div>
+      <div class="form-group" style="margin:0;min-width:120px">
+        <label>Duración (min)</label>
+        <input type="number" name="duration_min" class="form-control" value="30" min="5" step="5">
+      </div>
+      <div class="form-group" style="margin:0;min-width:120px">
+        <label>Precio ($)</label>
+        <input type="number" name="price" class="form-control" placeholder="Opcional" step="0.01">
+      </div>
+      <button type="submit" class="btn btn-primary">Agregar</button>
+    </form>
+  </div>
+
+  <div class="card">
+    {% if services %}
+    <table>
+      <thead>
+        <tr>
+          <th>Servicio</th>
+          <th>Duración</th>
+          <th>Precio</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in services %}
+        <tr style="{{ 'opacity:.5' if not s.is_active }}">
+          <td><strong>{{ s.name }}</strong></td>
+          <td>{{ s.duration_min }} min</td>
+          <td>{{ '$' ~ s.price if s.price else '—' }}</td>
+          <td>
+            <span class="badge {{ 'badge-in_service' if s.is_active else 'badge-cancelled' }}">
+              {{ 'Activo' if s.is_active else 'Inactivo' }}
+            </span>
+          </td>
+          <td>
+            <div style="display:flex;gap:.4rem">
+              <form method="post">
+                <input type="hidden" name="action" value="toggle">
+                <input type="hidden" name="service_id" value="{{ s.id }}">
+                <button type="submit" class="btn btn-ghost btn-sm">
+                  {{ 'Desactivar' if s.is_active else 'Activar' }}
+                </button>
+              </form>
+              <form method="post" onsubmit="return confirm('¿Eliminar este servicio?')">
+                <input type="hidden" name="action" value="delete">
+                <input type="hidden" name="service_id" value="{{ s.id }}">
+                <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p style="color:var(--color-text-muted);text-align:center;padding:2rem">
+      Sin servicios aún. Agregá el primero arriba.
+    </p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

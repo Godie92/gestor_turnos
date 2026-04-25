@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block nav_links %}
+<nav>
+  <a href="{{ url_for('admin.dashboard', slug=tenant.slug) }}"
+     class="{{ 'active' if request.endpoint == 'admin.dashboard' }}">
+    <span>🏠</span> <span>Inicio</span>
+  </a>
+  <a href="{{ url_for('admin.queue', slug=tenant.slug) }}"
+     class="{{ 'active' if request.endpoint == 'admin.queue' }}">
+    <span>🔢</span> <span>Cola</span>
+  </a>
+  <a href="{{ url_for('admin.appointments', slug=tenant.slug) }}"
+     class="{{ 'active' if request.endpoint == 'admin.appointments' }}">
+    <span>📅</span> <span>Turnos</span>
+  </a>
+  <a href="{{ url_for('admin.stats', slug=tenant.slug) }}"
+     class="{{ 'active' if request.endpoint == 'admin.stats' }}">
+    <span>📊</span> <span>Stats</span>
+  </a>
+  <a href="{{ url_for('admin.clients', slug=tenant.slug) }}"
+     class="{{ 'active' if request.endpoint in ('admin.clients', 'admin.client_history') }}">
+    <span>👥</span> <span class="hide-mobile">Clientes</span>
+  </a>
+  <a href="{{ url_for('admin.settings_general', slug=tenant.slug) }}"
+     class="{{ 'active' if 'settings' in request.endpoint }}">
+    <span>⚙️</span> <span>Config</span>
+  </a>
+  <a href="{{ url_for('display.screen', slug=tenant.slug) }}" target="_blank">
+    <span>📺</span> <span>Pantalla</span>
+  </a>
+  <a href="{{ url_for('admin.account', slug=tenant.slug) }}"
+     class="{{ 'active' if request.endpoint == 'admin.account' }}">
+    <span>👤</span> <span class="hide-mobile">Cuenta</span>
+  </a>
+  <a href="{{ url_for('auth.logout') }}">
+    <span>🚪</span> <span>Salir</span>
+  </a>
+  <button id="notif-btn" title="Activar notificaciones"
+          onclick="togglePush()"
+          style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,.7);
+                 font-size:1.1rem;padding:.4rem .5rem;border-radius:6px">
+    🔔
+  </button>
+</nav>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function() {
+  const SLUG = '{{ tenant.slug }}';
+  let swReg;
+
+  async function getVapidKey() {
+    const r = await fetch('/api/v1/push/vapid-key');
+    const d = await r.json();
+    return d.key;
+  }
+
+  function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const raw = atob(base64);
+    return new Uint8Array([...raw].map(c => c.charCodeAt(0)));
+  }
+
+  async function togglePush() {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+      showToast('Tu navegador no soporta notificaciones push', 'warning');
+      return;
+    }
+    swReg = swReg || await navigator.serviceWorker.ready;
+    const existing = await swReg.pushManager.getSubscription();
+    if (existing) {
+      await existing.unsubscribe();
+      await fetch('/api/v1/push/unsubscribe', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({endpoint: existing.endpoint}),
+      });
+      document.getElementById('notif-btn').style.opacity = '.5';
+      showToast('Notificaciones desactivadas', 'info');
+    } else {
+      const perm = await Notification.requestPermission();
+      if (perm !== 'granted') { showToast('Permiso denegado', 'warning'); return; }
+      const key = await getVapidKey();
+      const sub = await swReg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(key),
+      });
+      await fetch('/api/v1/push/subscribe', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(sub.toJSON()),
+      });
+      document.getElementById('notif-btn').style.opacity = '1';
+      showToast('✅ Notificaciones activadas', 'success');
+    }
+  }
+  window.togglePush = togglePush;
+
+  // Mostrar estado inicial
+  navigator.serviceWorker?.ready.then(reg => {
+    swReg = reg;
+    reg.pushManager.getSubscription().then(sub => {
+      const btn = document.getElementById('notif-btn');
+      if (btn) btn.style.opacity = sub ? '1' : '.5';
+    });
+  });
+})();
+</script>
+{% endblock %}

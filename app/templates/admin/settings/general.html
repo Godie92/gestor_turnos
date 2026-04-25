@@ -1,0 +1,211 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Configuración{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h1 class="page-title">⚙️ Configuración general</h1>
+
+  <!-- Sub-nav de configuración -->
+  <div style="display:flex;gap:.5rem;margin-bottom:1.5rem;flex-wrap:wrap">
+    <a href="{{ url_for('admin.settings_general', slug=tenant.slug) }}" class="btn btn-primary btn-sm">General</a>
+    <a href="{{ url_for('admin.settings_services', slug=tenant.slug) }}" class="btn btn-ghost btn-sm">Servicios</a>
+    <a href="{{ url_for('admin.settings_professionals', slug=tenant.slug) }}" class="btn btn-ghost btn-sm">Profesionales</a>
+    <a href="{{ url_for('admin.settings_hours', slug=tenant.slug) }}" class="btn btn-ghost btn-sm">Horarios</a>
+    <a href="{{ url_for('admin.settings_blocked', slug=tenant.slug) }}" class="btn btn-ghost btn-sm">Bloqueos</a>
+    <a href="{{ url_for('admin.settings_staff', slug=tenant.slug) }}" class="btn btn-ghost btn-sm">Usuarios</a>
+  </div>
+
+  <div class="card">
+    <form method="post" enctype="multipart/form-data">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nombre del negocio</label>
+          <input type="text" name="name" class="form-control" value="{{ tenant.name }}" required>
+        </div>
+        <div class="form-group">
+          <label>Tipo de negocio</label>
+          <input type="text" name="business_type" class="form-control"
+                 placeholder="Ej: Peluquería, Veterinaria, Consultorio..."
+                 value="{{ tenant.business_type or '' }}">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Color principal</label>
+          <div style="display:flex;gap:.5rem;align-items:center">
+            <input type="color" name="primary_color" value="{{ tenant.primary_color }}"
+                   style="height:38px;width:60px;border:1px solid var(--color-border);border-radius:7px;cursor:pointer">
+            <input type="text" id="color-text" value="{{ tenant.primary_color }}"
+                   class="form-control" style="max-width:120px" readonly>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Logo (PNG/JPG, máx 2 MB)</label>
+          <input type="file" name="logo" class="form-control" accept="image/*">
+          {% if tenant.logo_url %}
+          <img src="{{ tenant.logo_url }}" alt="Logo actual" style="height:40px;margin-top:.5rem;border-radius:4px">
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Teléfono del negocio</label>
+          <input type="tel" name="phone_number" class="form-control"
+                 value="{{ tenant.phone_number or '' }}" placeholder="+54911...">
+        </div>
+        <div class="form-group">
+          <label>Zona horaria</label>
+          <select name="timezone" class="form-control">
+            {% for tz in ['America/Argentina/Buenos_Aires','America/Santiago','America/Lima','America/Bogota','America/Mexico_City','America/Montevideo'] %}
+            <option value="{{ tz }}" {{ 'selected' if tenant.timezone == tz }}>{{ tz }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <!-- Email -->
+      <details style="margin-bottom:1rem" {{ 'open' if tenant.email_user }}>
+        <summary style="cursor:pointer;font-weight:600;margin-bottom:.75rem">
+          📧 Email de confirmaciones
+          {% if tenant.email_user %}
+            <span style="font-size:.75rem;font-weight:400;color:var(--color-success);margin-left:.5rem">● Configurado</span>
+          {% else %}
+            <span style="font-size:.75rem;font-weight:400;color:var(--color-text-muted);margin-left:.5rem">No configurado</span>
+          {% endif %}
+        </summary>
+        <div style="background:#f8f9ff;border-radius:10px;padding:1rem;margin-bottom:1rem">
+          <p style="font-size:.875rem;color:var(--color-text-muted);margin-bottom:1rem">
+            Para Gmail: activá verificación en 2 pasos en tu cuenta Google y creá una
+            <a href="https://myaccount.google.com/apppasswords" target="_blank" style="color:var(--color-primary)">contraseña de aplicación</a>.
+            Usá esa contraseña de 16 letras en el campo de contraseña.
+          </p>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Tu email (remitente)</label>
+              <input type="email" name="email_user" class="form-control"
+                     value="{{ tenant.email_user or '' }}"
+                     placeholder="tunegocio@gmail.com">
+            </div>
+            <div class="form-group">
+              <label>Contraseña de aplicación</label>
+              <input type="password" name="email_password" class="form-control"
+                     placeholder="{{ '••••••••••••••••' if tenant.email_password else 'Contraseña de app de Google' }}">
+              <small style="color:var(--color-text-muted)">Dejá vacío para no cambiarla.</small>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Servidor SMTP</label>
+              <input type="text" name="email_host" class="form-control"
+                     value="{{ tenant.email_host or 'smtp.gmail.com' }}"
+                     placeholder="smtp.gmail.com">
+            </div>
+            <div class="form-group">
+              <label>Puerto</label>
+              <input type="number" name="email_port" class="form-control"
+                     value="{{ tenant.email_port or 587 }}" placeholder="587">
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <details style="margin-bottom:1rem">
+        <summary style="cursor:pointer;font-weight:600;margin-bottom:.75rem">📱 WhatsApp Business API</summary>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Phone Number ID (Meta)</label>
+            <input type="text" name="wa_phone_id" class="form-control"
+                   value="{{ tenant.wa_phone_id or '' }}" placeholder="123456789...">
+          </div>
+          <div class="form-group">
+            <label>Access Token</label>
+            <input type="password" name="wa_token" class="form-control"
+                   placeholder="{{ '••••••• (guardado)' if tenant.wa_token else 'Pegá tu token aquí' }}">
+          </div>
+        </div>
+      </details>
+
+      <button type="submit" class="btn btn-primary">💾 Guardar cambios</button>
+    </form>
+  </div>
+
+  <!-- Link de reservas + QR -->
+  <div class="card">
+    <div class="card-header">🔗 Links del negocio</div>
+    <div class="form-group">
+      <label>Reservas online (compartir con clientes)</label>
+      <div style="display:flex;gap:.5rem">
+        <input type="text" class="form-control" readonly
+               value="{{ url_for('public.booking', slug=tenant.slug, _external=True) }}"
+               id="booking-url">
+        <button type="button" class="btn btn-ghost" onclick="copyUrl()">Copiar</button>
+      </div>
+    </div>
+
+    <!-- QR Code -->
+    <div class="form-group">
+      <label>Código QR para imprimir</label>
+      <div style="display:flex;align-items:flex-start;gap:1.5rem;flex-wrap:wrap">
+        <div id="qr-canvas" style="background:#fff;padding:12px;border-radius:10px;border:1px solid var(--color-border);display:inline-block"></div>
+        <div style="display:flex;flex-direction:column;gap:.5rem;justify-content:center">
+          <p style="font-size:.875rem;color:var(--color-text-muted);margin:0">
+            Imprimí este QR y pegalo en tu local.<br>
+            Los clientes lo escanean y reservan desde su celular.
+          </p>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="downloadQR()">⬇️ Descargar QR</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Pantalla TV</label>
+      <a href="{{ url_for('display.screen', slug=tenant.slug) }}" target="_blank" class="btn btn-ghost btn-sm">
+        Abrir pantalla →
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.querySelector('[type=color]').addEventListener('input', function() {
+    document.getElementById('color-text').value = this.value;
+    document.documentElement.style.setProperty('--color-primary', this.value);
+  });
+  function copyUrl() {
+    const el = document.getElementById('booking-url');
+    navigator.clipboard?.writeText(el.value).then(() => showToast('¡Link copiado!', 'success'))
+      .catch(() => { el.select(); document.execCommand('copy'); showToast('¡Link copiado!', 'success'); });
+  }
+
+  // Generar QR
+  const bookingUrl = document.getElementById('booking-url').value;
+  const qrContainer = document.getElementById('qr-canvas');
+  QRCode.toCanvas(document.createElement('canvas'), bookingUrl, {
+    width: 180, margin: 1,
+    color: { dark: '#1a1a2e', light: '#ffffff' }
+  }, function(err, canvas) {
+    if (!err) {
+      canvas.id = 'qr-img';
+      canvas.style.borderRadius = '4px';
+      qrContainer.appendChild(canvas);
+    }
+  });
+
+  function downloadQR() {
+    const canvas = document.getElementById('qr-img');
+    if (!canvas) return;
+    const link = document.createElement('a');
+    link.download = 'qr-reservas.png';
+    link.href = canvas.toDataURL();
+    link.click();
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}Cancelar turno{% endblock %}
+
+{% block navbar %}
+<header class="navbar">
+  <div class="brand">
+    {% if tenant.logo_url %}<img src="{{ tenant.logo_url }}" alt="{{ tenant.name }}">{% endif %}
+    <span>{{ tenant.name }}</span>
+  </div>
+</header>
+{% endblock %}
+
+{% block content %}
+<div style="max-width:480px;margin:3rem auto;padding:0 1rem;text-align:center">
+
+  {% if cancelled %}
+    <div style="font-size:4rem;margin-bottom:1rem">❌</div>
+    <h1 style="font-size:1.5rem;font-weight:800;margin-bottom:.5rem">Turno cancelado</h1>
+    <p style="color:var(--color-text-muted)">Tu turno fue cancelado correctamente.</p>
+    <a href="{{ url_for('public.booking', slug=tenant.slug) }}"
+       class="btn btn-primary" style="margin-top:1.5rem">Reservar otro turno</a>
+
+  {% elif already_done %}
+    <div style="font-size:4rem;margin-bottom:1rem">ℹ️</div>
+    <h1 style="font-size:1.5rem;font-weight:800;margin-bottom:.5rem">
+      {{ 'Turno ya finalizado' if appointment.status == 'done' else 'Turno ya cancelado' }}
+    </h1>
+    <p style="color:var(--color-text-muted)">No es posible modificar este turno.</p>
+
+  {% else %}
+    <div style="font-size:4rem;margin-bottom:1rem">🗑️</div>
+    <h1 style="font-size:1.5rem;font-weight:800;margin-bottom:.5rem">Cancelar turno</h1>
+
+    <div class="card" style="text-align:left;margin:1.5rem 0">
+      <div style="margin-bottom:.5rem"><strong>👤</strong> {{ appointment.client_name }}</div>
+      <div style="margin-bottom:.5rem"><strong>💅</strong> {{ appointment.service.name }}</div>
+      <div style="margin-bottom:.5rem"><strong>📅</strong> {{ appointment.scheduled_at.strftime('%d/%m/%Y') }}</div>
+      <div><strong>🕐</strong> {{ appointment.scheduled_at.strftime('%H:%M') }} hs</div>
+    </div>
+
+    <p style="color:var(--color-text-muted);margin-bottom:1.5rem">
+      ¿Estás seguro que querés cancelar este turno?
+    </p>
+
+    <form method="post">
+      <button type="submit" class="btn btn-danger" style="width:100%;justify-content:center">
+        Sí, cancelar turno
+      </button>
+    </form>
+    <a href="{{ url_for('public.booking', slug=tenant.slug) }}"
+       style="display:block;margin-top:1rem;color:var(--color-text-muted)">
+      No, mantener mi turno
+    </a>
+  {% endif %}
+</div>
+{% endblock %}

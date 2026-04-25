@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ tenant.name }} — Pantalla de turnos</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/display.css') }}">
+  <style>:root { --color-primary: {{ tenant.primary_color }}; }</style>
+</head>
+<body>
+  <div id="tv-root" data-slug="{{ tenant.slug }}">
+
+    <header class="tv-header">
+      {% if tenant.logo_url %}
+        <img src="{{ tenant.logo_url }}" alt="{{ tenant.name }}">
+      {% endif %}
+      <div class="biz-name">{{ tenant.name }}</div>
+      <div class="tv-clock" id="tv-clock">--:--</div>
+    </header>
+
+    <div class="tv-body">
+      <div class="tv-panel current">
+        <div class="label">✅ En atención</div>
+        <div class="big-name" id="current-name">—</div>
+        <div class="service" id="current-service"></div>
+      </div>
+
+      <div class="tv-panel">
+        <div class="label">⏭️ Próximo</div>
+        <div class="big-name" id="next-name">—</div>
+        <div class="service" id="next-service"></div>
+      </div>
+    </div>
+
+    <div class="tv-waiting-bar">
+      <span>En espera:</span>
+      <span class="count" id="waiting-count">0</span>
+      <span>personas</span>
+      <span style="margin-left:1.5rem;opacity:.7;font-size:.85em">·</span>
+      <span style="margin-left:1.5rem;opacity:.7;font-size:.85em">Espera aprox: <span id="tv-wait-est">—</span></span>
+    </div>
+
+  </div>
+
+  <script src="{{ url_for('static', filename='js/display.js') }}"></script>
+</body>
+</html>

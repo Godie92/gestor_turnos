@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -m venv .venv)",
+      "Bash(.venv/Scripts/pip install:*)",
+      "Bash(.venv/Scripts/python seed.py --slug demo --name \"Unas y Style\" --email admin@demo.com --password admin123 --type nail_salon)",
+      "Bash(set FLASK_APP=wsgi.py)",
+      "Bash(set FLASK_ENV=development)",
+      "Bash(.venv/Scripts/python -c \"from app import create_app; app = create_app\\('development'\\); print\\('App OK, routes:', len\\(list\\(app.url_map.iter_rules\\(\\)\\)\\)\\)\")",
+      "Bash(.venv/Scripts/flask run:*)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5000/health)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5000/demo/reservar)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5000/demo/pantalla)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5000/auth/login)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5000/api/v1/demo/queue)",
+      "Bash(curl -s http://localhost:5000/api/v1/demo/queue)",
+      "Bash(pip install:*)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(FLASK_ENV=development python seed.py)",
+      "Bash(grep -n \"url_prefix\" /c/Users/diego/OneDrive/Documents/proyectos/gestor_turnos/app/blueprints/*/\\\\__init__.py)",
+      "Bash(.venv/Scripts/python.exe -c \"from app import create_app; app = create_app\\('development'\\); print\\('App created OK'\\)\")",
+      "Bash(.venv/Scripts/python.exe -c ' *)",
+      "Bash(netstat -ano)",
+      "Bash(findstr :5000)",
+      "Bash(taskkill /F /PID 10816 /PID 7948 /PID 12780 /PID 17992 /PID 12020 /PID 19252 /PID 15848 taskkill /F /IM python.exe sleep 2 netstat -ano)",
+      "Bash(Get-Process python *)",
+      "Bash(Stop-Process -Force wmic process where \"name='python.exe'\" delete sleep 2 netstat -ano)",
+      "Bash(wmic process *)"
+    ]
+  }
+}

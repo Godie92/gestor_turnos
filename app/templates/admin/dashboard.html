@@ -1,0 +1,75 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h1 class="page-title">Bienvenido, {{ tenant.name }}</h1>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-number">{{ today_appts }}</div>
+      <div class="stat-label">Turnos hoy</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">{{ waiting }}</div>
+      <div class="stat-label">En espera</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number" style="font-size:1.2rem">
+        {{ in_service.client_name if in_service else '—' }}
+      </div>
+      <div class="stat-label">En atención ahora</div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:2rem">
+    <a href="{{ url_for('admin.queue', slug=tenant.slug) }}" class="btn btn-primary">
+      🔢 Gestionar cola
+    </a>
+    <a href="{{ url_for('admin.appointments', slug=tenant.slug) }}" class="btn btn-info">
+      📅 Ver turnos de hoy
+    </a>
+    <a href="{{ url_for('display.screen', slug=tenant.slug) }}" target="_blank" class="btn btn-ghost">
+      📺 Abrir pantalla TV
+    </a>
+    <a href="{{ url_for('public.booking', slug=tenant.slug) }}" target="_blank" class="btn btn-ghost">
+      🔗 Link de reservas
+    </a>
+  </div>
+
+  {% if upcoming %}
+  <div class="card">
+    <div class="card-header">⏰ Próximos turnos de hoy</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Hora</th>
+          <th>Cliente</th>
+          <th>Servicio</th>
+          <th>Profesional</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for appt in upcoming %}
+        <tr>
+          <td><strong>{{ appt.scheduled_at.strftime('%H:%M') }}</strong></td>
+          <td>{{ appt.client_name }}</td>
+          <td>{{ appt.service.name }}</td>
+          <td>{{ appt.professional.name if appt.professional else '—' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div style="margin-top:1rem">
+      <a href="{{ url_for('admin.appointments', slug=tenant.slug) }}" style="font-size:.875rem">
+        Ver todos los turnos →
+      </a>
+    </div>
+  </div>
+  {% else %}
+  <div class="card" style="text-align:center;color:var(--color-text-muted);padding:2rem">
+    Sin turnos confirmados próximos para hoy.
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

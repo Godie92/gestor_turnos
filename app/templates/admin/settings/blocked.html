@@ -1,0 +1,77 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Bloqueos{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h1 class="page-title">⚙️ Bloqueos de horario</h1>
+
+  <div style="display:flex;gap:.5rem;margin-bottom:1.5rem;flex-wrap:wrap">
+    <a href="{{ url_for('admin.settings_general', slug=tenant.slug) }}" class="btn btn-ghost btn-sm">General</a>
+    <a href="{{ url_for('admin.settings_services', slug=tenant.slug) }}" class="btn btn-ghost btn-sm">Servicios</a>
+    <a href="{{ url_for('admin.settings_professionals', slug=tenant.slug) }}" class="btn btn-ghost btn-sm">Profesionales</a>
+    <a href="{{ url_for('admin.settings_hours', slug=tenant.slug) }}" class="btn btn-ghost btn-sm">Horarios</a>
+    <a href="{{ url_for('admin.settings_blocked', slug=tenant.slug) }}" class="btn btn-primary btn-sm">Bloqueos</a>
+    <a href="{{ url_for('admin.settings_staff', slug=tenant.slug) }}" class="btn btn-ghost btn-sm">Usuarios</a>
+  </div>
+
+  <!-- Agregar bloqueo -->
+  <div class="card">
+    <div class="card-header">➕ Agregar bloqueo (feriado, pausa, cierre especial)</div>
+    <form method="post" class="form-row" style="align-items:flex-end">
+      <input type="hidden" name="action" value="add">
+      <div class="form-group">
+        <label>Desde</label>
+        <input type="datetime-local" name="start_dt" class="form-control" required>
+      </div>
+      <div class="form-group">
+        <label>Hasta</label>
+        <input type="datetime-local" name="end_dt" class="form-control" required>
+      </div>
+      <div class="form-group" style="flex:2">
+        <label>Motivo (opcional)</label>
+        <input type="text" name="reason" class="form-control" placeholder="Ej: Feriado nacional">
+      </div>
+      <div class="form-group" style="flex:none">
+        <button type="submit" class="btn btn-primary">Agregar</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Lista de bloqueos -->
+  <div class="card">
+    <div class="card-header">📋 Bloqueos activos y futuros</div>
+    {% if blocks %}
+    <table>
+      <thead>
+        <tr>
+          <th>Desde</th>
+          <th>Hasta</th>
+          <th>Motivo</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in blocks %}
+        <tr>
+          <td>{{ b.start_dt.strftime('%d/%m/%Y %H:%M') }}</td>
+          <td>{{ b.end_dt.strftime('%d/%m/%Y %H:%M') }}</td>
+          <td>{{ b.reason or '—' }}</td>
+          <td>
+            <form method="post" onsubmit="return confirm('¿Eliminar este bloqueo?')">
+              <input type="hidden" name="action" value="delete">
+              <input type="hidden" name="block_id" value="{{ b.id }}">
+              <button type="submit" class="btn btn-danger btn-sm">✕ Eliminar</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div style="text-align:center;padding:2rem;color:var(--color-text-muted)">
+      Sin bloqueos configurados.
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

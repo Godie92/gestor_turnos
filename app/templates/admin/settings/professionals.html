@@ -1,0 +1,77 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Profesionales{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h1 class="page-title">⚙️ Profesionales</h1>
+
+  <div style="display:flex;gap:.5rem;margin-bottom:1.5rem;flex-wrap:wrap">
+    <a href="{{ url_for('admin.settings_general', slug=tenant.slug) }}" class="btn btn-ghost btn-sm">General</a>
+    <a href="{{ url_for('admin.settings_services', slug=tenant.slug) }}" class="btn btn-ghost btn-sm">Servicios</a>
+    <a href="{{ url_for('admin.settings_professionals', slug=tenant.slug) }}" class="btn btn-primary btn-sm">Profesionales</a>
+    <a href="{{ url_for('admin.settings_hours', slug=tenant.slug) }}" class="btn btn-ghost btn-sm">Horarios</a>
+    <a href="{{ url_for('admin.settings_blocked', slug=tenant.slug) }}" class="btn btn-ghost btn-sm">Bloqueos</a>
+    <a href="{{ url_for('admin.settings_staff', slug=tenant.slug) }}" class="btn btn-ghost btn-sm">Usuarios</a>
+  </div>
+
+  <div class="card">
+    <div class="card-header">Agregar profesional</div>
+    <form method="post" style="display:flex;gap:.75rem;align-items:flex-end;flex-wrap:wrap">
+      <input type="hidden" name="action" value="add">
+      <div class="form-group" style="margin:0;flex:1;min-width:180px">
+        <label>Nombre</label>
+        <input type="text" name="name" class="form-control" placeholder="Ej: María" required>
+      </div>
+      <button type="submit" class="btn btn-primary">Agregar</button>
+    </form>
+  </div>
+
+  {% if professionals %}
+  {% for p in professionals %}
+  <div class="card">
+    <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem">
+      <strong style="font-size:1.05rem">👤 {{ p.name }}</strong>
+      <form method="post" onsubmit="return confirm('¿Eliminar a {{ p.name }}?')" style="margin-left:auto">
+        <input type="hidden" name="action" value="delete">
+        <input type="hidden" name="professional_id" value="{{ p.id }}">
+        <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+      </form>
+    </div>
+
+    {% if services %}
+    <form method="post">
+      <input type="hidden" name="action" value="assign_services">
+      <input type="hidden" name="professional_id" value="{{ p.id }}">
+      <div style="margin-bottom:.5rem;font-size:.875rem;font-weight:600;color:var(--color-text-muted)">
+        Servicios que realiza:
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem">
+        {% set assigned_ids = p.services.all() | map(attribute='id') | list %}
+        {% for s in services %}
+        <label style="display:flex;align-items:center;gap:.4rem;padding:.35rem .7rem;
+                      border:1.5px solid var(--color-border);border-radius:7px;cursor:pointer;
+                      background:{{ '#e8e6ff' if s.id in assigned_ids else '#fff' }}">
+          <input type="checkbox" name="service_ids" value="{{ s.id }}"
+                 {{ 'checked' if s.id in assigned_ids }}>
+          {{ s.name }}
+        </label>
+        {% endfor %}
+      </div>
+      <button type="submit" class="btn btn-ghost btn-sm">💾 Guardar servicios</button>
+    </form>
+    {% else %}
+    <p style="color:var(--color-text-muted);font-size:.875rem">
+      No hay servicios activos. <a href="{{ url_for('admin.settings_services', slug=tenant.slug) }}">Agregá uno.</a>
+    </p>
+    {% endif %}
+  </div>
+  {% endfor %}
+  {% else %}
+  <div class="card">
+    <p style="color:var(--color-text-muted);text-align:center;padding:2rem">
+      Sin profesionales aún. Agregá el primero arriba.
+    </p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}Turno confirmado{% endblock %}
+
+{% block navbar %}
+<header class="navbar">
+  <div class="brand">
+    {% if tenant.logo_url %}<img src="{{ tenant.logo_url }}" alt="{{ tenant.name }}">{% endif %}
+    <span>{{ tenant.name }}</span>
+  </div>
+</header>
+{% endblock %}
+
+{% block content %}
+<div style="max-width:480px;margin:3rem auto;padding:0 1rem;text-align:center">
+  <div style="font-size:4rem;margin-bottom:1rem">✅</div>
+  <h1 style="font-size:1.6rem;font-weight:800;margin-bottom:.5rem">¡Turno confirmado!</h1>
+  <p style="color:var(--color-text-muted);margin-bottom:2rem">
+    Te esperamos en <strong>{{ tenant.name }}</strong>
+  </p>
+
+  <div class="card" style="text-align:left">
+    <div class="form-group" style="margin-bottom:.75rem">
+      <strong>👤 Nombre:</strong> {{ appointment.client_name }}
+    </div>
+    <div class="form-group" style="margin-bottom:.75rem">
+      <strong>💅 Servicio:</strong> {{ appointment.service.name }}
+    </div>
+    {% if appointment.professional %}
+    <div class="form-group" style="margin-bottom:.75rem">
+      <strong>👩 Profesional:</strong> {{ appointment.professional.name }}
+    </div>
+    {% endif %}
+    <div class="form-group" style="margin-bottom:.75rem">
+      <strong>📅 Fecha:</strong> {{ appointment.scheduled_at.strftime('%d/%m/%Y') }}
+    </div>
+    <div class="form-group" style="margin-bottom:0">
+      <strong>🕐 Hora:</strong> {{ appointment.scheduled_at.strftime('%H:%M') }} hs
+    </div>
+  </div>
+
+  {% if appointment.confirmation_sent %}
+  <p style="color:var(--color-text-muted);font-size:.9rem;margin-top:1rem">
+    📱 Te enviamos la confirmación por WhatsApp.
+  </p>
+  {% endif %}
+
+  <a href="{{ url_for('public.booking', slug=tenant.slug) }}"
+     class="btn btn-ghost" style="margin-top:1.5rem">
+    ← Hacer otra reserva
+  </a>
+</div>
+{% endblock %}

@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Flask Dev Server",
+      "runtimeExecutable": "flask",
+      "runtimeArgs": ["run", "--debug", "--port", "5000"],
+      "port": 5000
+    },
+    {
+      "name": "Gunicorn (producción local)",
+      "runtimeExecutable": "gunicorn",
+      "runtimeArgs": ["wsgi:app", "--workers", "2", "--bind", "0.0.0.0:8000"],
+      "port": 8000
+    }
+  ]
+}

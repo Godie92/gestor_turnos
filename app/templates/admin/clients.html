@@ -1,0 +1,55 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Clientes{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h1 class="page-title">👥 Clientes ({{ total }})</h1>
+
+  <div class="card">
+    {% if clients %}
+    <table>
+      <thead>
+        <tr>
+          <th>Cliente</th>
+          <th>Teléfono</th>
+          <th>Visitas</th>
+          <th class="hide-mobile">Última visita</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for phone, name, total_visits, last in clients %}
+        <tr>
+          <td><strong>{{ name }}</strong></td>
+          <td>{{ phone or '—' }}</td>
+          <td>{{ total_visits }}</td>
+          <td class="hide-mobile">
+            {{ last.strftime('%d/%m/%Y') if last else '—' }}
+          </td>
+          <td>
+            <a href="{{ url_for('admin.client_history', slug=tenant.slug, phone=phone) }}"
+               class="btn btn-ghost btn-sm">Ver historial</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <!-- Paginación -->
+    {% if total_pages > 1 %}
+    <div style="display:flex;justify-content:center;gap:.5rem;margin-top:1.25rem;flex-wrap:wrap">
+      {% for p in range(1, total_pages + 1) %}
+      <a href="?page={{ p }}"
+         class="btn btn-sm {{ 'btn-primary' if p == page else 'btn-ghost' }}">{{ p }}</a>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <p style="text-align:center;padding:3rem;color:var(--color-text-muted)">
+      Sin clientes registrados aún.
+    </p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

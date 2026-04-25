@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Iniciar sesión — Gestor de Turnos</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+  <style>
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: #f0f0f7;
+    }
+    .login-wrap {
+      width: 100%;
+      max-width: 420px;
+      padding: 1rem;
+    }
+    .login-logo {
+      text-align: center;
+      margin-bottom: 1.75rem;
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--color-primary);
+    }
+    .login-logo span {
+      display: block;
+      font-size: .9rem;
+      color: var(--color-text-muted);
+      font-weight: 400;
+      margin-top: .25rem;
+    }
+    .login-section {
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.08);
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .section-label {
+      font-size: .7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--color-text-muted);
+      margin-bottom: 1rem;
+    }
+    .divider {
+      text-align: center;
+      color: var(--color-text-muted);
+      font-size: .8rem;
+      margin: .25rem 0;
+      position: relative;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: 42%;
+      height: 1px;
+      background: var(--color-border);
+    }
+    .divider::before { left: 0; }
+    .divider::after { right: 0; }
+    .demo-card {
+      background: linear-gradient(135deg, #6C63FF22, #6C63FF11);
+      border: 1.5px solid var(--color-primary);
+      border-radius: 14px;
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .demo-card .demo-text { flex: 1; }
+    .demo-card .demo-text strong { display: block; font-size: .95rem; }
+    .demo-card .demo-text small { color: var(--color-text-muted); font-size: .8rem; }
+    .platform-card {
+      background: #1a1a2e;
+      border-radius: 14px;
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .platform-card .pt-text { flex: 1; }
+    .platform-card .pt-text strong { display: block; font-size: .95rem; color: #fff; }
+    .platform-card .pt-text small { color: rgba(255,255,255,.5); font-size: .8rem; }
+  </style>
+</head>
+<body>
+<div class="login-wrap">
+
+  <div class="login-logo">
+    🗓️ Gestor de Turnos
+    <span>Plataforma de gestión de turnos</span>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category }}" style="border-radius:10px;margin-bottom:.75rem">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endwith %}
+
+  <!-- Acceso Staff / Propietario -->
+  <div class="login-section">
+    <div class="section-label">👤 Acceso staff y propietarios</div>
+    <form method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" class="form-control"
+               placeholder="tu@email.com" required autofocus>
+      </div>
+      <div class="form-group" style="margin-bottom:.75rem">
+        <label for="password">Contraseña</label>
+        <input type="password" id="password" name="password" class="form-control"
+               placeholder="••••••••" required>
+      </div>
+      <button type="submit" class="btn btn-primary"
+              style="width:100%;justify-content:center;padding:.65rem">
+        Ingresar →
+      </button>
+    </form>
+    <p style="text-align:center;margin-top:1rem;font-size:.85rem;color:var(--color-text-muted)">
+      ¿No tenés cuenta?
+      <a href="{{ url_for('public.register') }}">Crear mi negocio →</a>
+    </p>
+  </div>
+
+  <div class="divider">o</div>
+
+  <!-- Demo -->
+  <div class="demo-card" style="margin:1rem 0">
+    <div class="demo-text">
+      <strong>🎯 Ver demo</strong>
+      <small>Explorá la app con datos de ejemplo, sin registrarte</small>
+    </div>
+    <a href="{{ url_for('auth.demo_login') }}" class="btn btn-ghost btn-sm"
+       style="white-space:nowrap">Entrar al demo</a>
+  </div>
+
+  <div class="divider">o</div>
+
+  <!-- Admin plataforma -->
+  <div class="platform-card" style="margin-top:1rem">
+    <div class="pt-text">
+      <strong>🔑 Admin de plataforma</strong>
+      <small>Usá tus credenciales de superadmin en el formulario de arriba</small>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

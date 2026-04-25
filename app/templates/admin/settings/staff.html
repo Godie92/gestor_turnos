@@ -1,0 +1,105 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Usuarios{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h1 class="page-title">⚙️ Usuarios del equipo</h1>
+
+  <div style="display:flex;gap:.5rem;margin-bottom:1.5rem;flex-wrap:wrap">
+    <a href="{{ url_for('admin.settings_general', slug=tenant.slug) }}" class="btn btn-ghost btn-sm">General</a>
+    <a href="{{ url_for('admin.settings_services', slug=tenant.slug) }}" class="btn btn-ghost btn-sm">Servicios</a>
+    <a href="{{ url_for('admin.settings_professionals', slug=tenant.slug) }}" class="btn btn-ghost btn-sm">Profesionales</a>
+    <a href="{{ url_for('admin.settings_hours', slug=tenant.slug) }}" class="btn btn-ghost btn-sm">Horarios</a>
+    <a href="{{ url_for('admin.settings_blocked', slug=tenant.slug) }}" class="btn btn-ghost btn-sm">Bloqueos</a>
+    <a href="{{ url_for('admin.settings_staff', slug=tenant.slug) }}" class="btn btn-primary btn-sm">Usuarios</a>
+  </div>
+
+  <!-- Agregar usuario -->
+  {% if current_user.role == 'owner' %}
+  <div class="card">
+    <div class="card-header">➕ Agregar usuario</div>
+    <form method="post" style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:flex-end">
+      <input type="hidden" name="action" value="add">
+      <div class="form-group" style="margin:0;flex:2;min-width:180px">
+        <label>Email</label>
+        <input type="email" name="email" class="form-control" placeholder="staff@ejemplo.com" required>
+      </div>
+      <div class="form-group" style="margin:0;min-width:160px">
+        <label>Contraseña</label>
+        <input type="password" name="password" class="form-control" placeholder="Mínimo 6 caracteres" required minlength="6">
+      </div>
+      <div class="form-group" style="margin:0;min-width:130px">
+        <label>Rol</label>
+        <select name="role" class="form-control">
+          <option value="staff">Staff</option>
+          <option value="owner">Propietario</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary">Agregar</button>
+    </form>
+  </div>
+  {% endif %}
+
+  <!-- Lista de usuarios -->
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>Email</th>
+          <th>Rol</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in staff %}
+        <tr style="{{ 'opacity:.5' if not u.is_active }}">
+          <td>
+            <strong>{{ u.email }}</strong>
+            {% if u.id == current_user.id %}
+              <span style="font-size:.75rem;color:var(--color-text-muted)"> (vos)</span>
+            {% endif %}
+          </td>
+          <td>
+            <span class="badge {{ 'badge-in_service' if u.role == 'owner' else 'badge-called' }}">
+              {{ 'Propietario' if u.role == 'owner' else 'Staff' }}
+            </span>
+          </td>
+          <td>
+            <span class="badge {{ 'badge-waiting' if u.is_active else 'badge-cancelled' }}">
+              {{ 'Activo' if u.is_active else 'Inactivo' }}
+            </span>
+          </td>
+          <td>
+            {% if current_user.role == 'owner' and u.id != current_user.id %}
+            <div style="display:flex;gap:.4rem">
+              <form method="post">
+                <input type="hidden" name="action" value="toggle">
+                <input type="hidden" name="user_id" value="{{ u.id }}">
+                <button type="submit" class="btn btn-ghost btn-sm">
+                  {{ 'Desactivar' if u.is_active else 'Activar' }}
+                </button>
+              </form>
+              <form method="post" onsubmit="return confirm('¿Eliminar a {{ u.email }}?')">
+                <input type="hidden" name="action" value="delete">
+                <input type="hidden" name="user_id" value="{{ u.id }}">
+                <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+              </form>
+            </div>
+            {% else %}
+            <span style="font-size:.8rem;color:var(--color-text-muted)">—</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div style="margin-top:.5rem">
+    <a href="{{ url_for('admin.account', slug=tenant.slug) }}" class="btn btn-ghost btn-sm">
+      🔑 Cambiar mi contraseña →
+    </a>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Horarios{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h1 class="page-title">⚙️ Horarios de atención</h1>
+
+  <div style="display:flex;gap:.5rem;margin-bottom:1.5rem;flex-wrap:wrap">
+    <a href="{{ url_for('admin.settings_general', slug=tenant.slug) }}" class="btn btn-ghost btn-sm">General</a>
+    <a href="{{ url_for('admin.settings_services', slug=tenant.slug) }}" class="btn btn-ghost btn-sm">Servicios</a>
+    <a href="{{ url_for('admin.settings_professionals', slug=tenant.slug) }}" class="btn btn-ghost btn-sm">Profesionales</a>
+    <a href="{{ url_for('admin.settings_hours', slug=tenant.slug) }}" class="btn btn-primary btn-sm">Horarios</a>
+    <a href="{{ url_for('admin.settings_blocked', slug=tenant.slug) }}" class="btn btn-ghost btn-sm">Bloqueos</a>
+    <a href="{{ url_for('admin.settings_staff', slug=tenant.slug) }}" class="btn btn-ghost btn-sm">Usuarios</a>
+  </div>
+
+  <div class="card">
+    <form method="post">
+      <table>
+        <thead>
+          <tr>
+            <th>Día</th>
+            <th>Abierto</th>
+            <th>Apertura</th>
+            <th>Cierre</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for i in range(7) %}
+          {% set wh = hours.get(i) %}
+          <tr>
+            <td><strong>{{ weekday_names[i] }}</strong></td>
+            <td>
+              <input type="checkbox" name="open_{{ i }}"
+                     {{ 'checked' if wh and wh.is_open else '' }}>
+            </td>
+            <td>
+              <input type="time" name="open_time_{{ i }}" class="form-control"
+                     value="{{ wh.open_time.strftime('%H:%M') if wh else '09:00' }}"
+                     style="max-width:120px">
+            </td>
+            <td>
+              <input type="time" name="close_time_{{ i }}" class="form-control"
+                     value="{{ wh.close_time.strftime('%H:%M') if wh else '18:00' }}"
+                     style="max-width:120px">
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <div style="margin-top:1.5rem">
+        <button type="submit" class="btn btn-primary">💾 Guardar horarios</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

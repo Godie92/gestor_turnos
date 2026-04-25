@@ -1,0 +1,132 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Estadísticas{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.5rem">
+    <h1 class="page-title" style="margin:0">📊 Estadísticas</h1>
+    <span style="color:var(--color-text-muted);font-size:.875rem">
+      Últimos 30 días ({{ start.strftime('%d/%m') }} – {{ end.strftime('%d/%m/%Y') }})
+    </span>
+    <a href="{{ url_for('admin.export_csv', slug=tenant.slug) }}"
+       class="btn btn-ghost btn-sm" style="margin-left:auto">
+      ⬇️ Exportar CSV
+    </a>
+  </div>
+
+  <!-- KPIs -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-number" style="color:var(--color-success)">{{ total_done }}</div>
+      <div class="stat-label">Turnos completados</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">{{ total_confirmed }}</div>
+      <div class="stat-label">Turnos confirmados</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number" style="color:var(--color-danger)">{{ total_cancelled }}</div>
+      <div class="stat-label">Cancelados</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number" style="color:var(--color-info)">{{ unique_clients }}</div>
+      <div class="stat-label">Clientes únicos</div>
+    </div>
+  </div>
+
+  <!-- Gráfico diario -->
+  <div class="card">
+    <div class="card-header">📅 Turnos por día (últimos 30 días)</div>
+    <canvas id="daily-chart" height="80"></canvas>
+  </div>
+
+  <!-- Servicios top + Profesionales -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem">
+    <div class="card">
+      <div class="card-header">💅 Servicios más solicitados</div>
+      {% if top_services %}
+      <table>
+        <thead><tr><th>Servicio</th><th>Turnos</th></tr></thead>
+        <tbody>
+          {% for name, total in top_services %}
+          <tr><td>{{ name }}</td><td><strong>{{ total }}</strong></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p style="color:var(--color-text-muted);text-align:center;padding:2rem">Sin datos aún.</p>
+      {% endif %}
+    </div>
+
+    <div class="card">
+      <div class="card-header">👤 Turnos por profesional</div>
+      {% if top_professionals %}
+      <table>
+        <thead><tr><th>Profesional</th><th>Turnos</th></tr></thead>
+        <tbody>
+          {% for name, total in top_professionals %}
+          <tr><td>{{ name }}</td><td><strong>{{ total }}</strong></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p style="color:var(--color-text-muted);text-align:center;padding:2rem">Sin datos aún.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Exportar CSV -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;flex-wrap:wrap">
+    <div class="card">
+      <div class="card-header">⬇️ Exportar turnos a CSV</div>
+      <form method="get" action="{{ url_for('admin.export_csv', slug=tenant.slug) }}">
+        <div class="form-group">
+          <label>Desde</label>
+          <input type="date" name="from" class="form-control"
+                 value="{{ start.isoformat() }}">
+        </div>
+        <div class="form-group">
+          <label>Hasta</label>
+          <input type="date" name="to" class="form-control"
+                 value="{{ end.isoformat() }}">
+        </div>
+        <button type="submit" class="btn btn-primary">Descargar CSV</button>
+      </form>
+    </div>
+    <div></div>
+  </div>
+
+  <div style="margin-top:.5rem">
+    <a href="{{ url_for('admin.clients', slug=tenant.slug) }}" class="btn btn-ghost">
+      👥 Ver historial de clientes →
+    </a>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const labels = {{ daily | map(attribute='day') | list | tojson }};
+  const values = {{ daily | map(attribute='total') | list | tojson }};
+  new Chart(document.getElementById('daily-chart'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Turnos',
+        data: values,
+        backgroundColor: 'rgba(108,99,255,.7)',
+        borderRadius: 6,
+      }]
+    },
+    options: {
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
+    }
+  });
+</script>
+{% endblock %}

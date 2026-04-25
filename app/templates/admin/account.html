@@ -1,0 +1,39 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Mi cuenta{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h1 class="page-title">🔑 Mi cuenta</h1>
+
+  <div class="card" style="max-width:480px">
+    <div class="card-header">Cambiar contraseña</div>
+    <form method="post">
+      <div class="form-group">
+        <label>Contraseña actual</label>
+        <input type="password" name="current_password" class="form-control"
+               placeholder="••••••••" required>
+      </div>
+      <div class="form-group">
+        <label>Nueva contraseña</label>
+        <input type="password" name="new_password" class="form-control"
+               placeholder="Mínimo 6 caracteres" required minlength="6">
+      </div>
+      <div class="form-group">
+        <label>Confirmar nueva contraseña</label>
+        <input type="password" name="confirm_password" class="form-control"
+               placeholder="Repetí la nueva contraseña" required>
+      </div>
+      <div style="display:flex;gap:.75rem;align-items:center">
+        <button type="submit" class="btn btn-primary">Guardar contraseña</button>
+        <a href="{{ url_for('admin.settings_general', slug=tenant.slug) }}"
+           class="btn btn-ghost">Cancelar</a>
+      </div>
+    </form>
+  </div>
+
+  <div style="margin-top:1rem;color:var(--color-text-muted);font-size:.875rem">
+    Sesión iniciada como <strong>{{ current_user.email }}</strong>
+    · Rol: {{ 'Propietario' if current_user.role == 'owner' else 'Staff' }}
+  </div>
+</div>
+{% endblock %}

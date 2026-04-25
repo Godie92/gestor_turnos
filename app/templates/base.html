@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{% endblock %} — {{ tenant.name if tenant is defined else 'Gestor de Turnos' }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+  <meta name="theme-color" content="{{ tenant.primary_color if tenant is defined else '#6C63FF' }}">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  {% if tenant is defined %}
+  <style>
+    :root {
+      --color-primary: {{ tenant.primary_color }};
+      --color-primary-dark: {{ tenant.primary_color }}cc;
+    }
+  </style>
+  {% endif %}
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  {% block navbar %}
+  <header class="navbar">
+    <a class="brand" href="#">
+      {% if tenant is defined and tenant.logo_url %}
+        <img src="{{ tenant.logo_url }}" alt="{{ tenant.name }}">
+      {% endif %}
+      <span>{{ tenant.name if tenant is defined else 'Gestor de Turnos' }}</span>
+    </a>
+    {% block nav_links %}{% endblock %}
+  </header>
+  {% endblock %}
+
+  {% if tenant is defined and tenant.membership_needs_payment %}
+  <div style="background:{{ '#fff3cd' if tenant.membership_status == 'trial' else '#f8d7da' }};
+              color:{{ '#856404' if tenant.membership_status == 'trial' else '#721c24' }};
+              padding:.65rem 1.5rem;font-size:.875rem;display:flex;
+              align-items:center;gap:1rem;flex-wrap:wrap">
+    <span>
+      {% if tenant.membership_status == 'trial' %}
+        🟡 Estás usando el período de prueba.
+      {% else %}
+        🔴 Tu membresía está vencida. El acceso puede desactivarse en cualquier momento.
+      {% endif %}
+    </span>
+    {% if tenant.mp_payment_link %}
+    <a href="{{ tenant.mp_payment_link }}" target="_blank"
+       style="font-weight:700;color:inherit;border-bottom:1.5px solid currentColor">
+      Pagar membresía →
+    </a>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% block content %}{% endblock %}
+
+  {% block scripts %}{% endblock %}
+
+  <!-- CSRF: inyectar token en todos los forms HTML -->
+  <script>
+    (function() {
+      const token = document.querySelector('meta[name=csrf-token]')?.content;
+      if (!token) return;
+      document.querySelectorAll('form').forEach(f => {
+        if (!f.querySelector('[name=csrf_token]')) {
+          const inp = document.createElement('input');
+          inp.type = 'hidden'; inp.name = 'csrf_token'; inp.value = token;
+          f.appendChild(inp);
+        }
+      });
+    })();
+  </script>
+
+  <!-- Toast container -->
+  <div id="toast-container" style="
+    position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;
+    display:flex;flex-direction:column;gap:.5rem;pointer-events:none">
+  </div>
+  <script>
+    function showToast(msg, type) {
+      const colors = {success:'#2ecc71',danger:'#e74c3c',warning:'#f39c12',info:'#3498db'};
+      const t = document.createElement('div');
+      t.style.cssText = `background:${colors[type]||colors.info};color:#fff;padding:.75rem 1.25rem;
+        border-radius:10px;font-size:.9rem;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,.2);
+        pointer-events:auto;max-width:320px;animation:slideIn .2s ease`;
+      t.textContent = msg;
+      document.getElementById('toast-container').appendChild(t);
+      setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity .3s';
+        setTimeout(() => t.remove(), 300); }, 3500);
+    }
+    // Convertir flash messages en toasts
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}
+        document.addEventListener('DOMContentLoaded', () => showToast({{ msg|tojson }}, {{ cat|tojson }}));
+      {% endfor %}
+    {% endwith %}
+  </script>
+  <style>
+    @keyframes slideIn { from { transform: translateX(120%); opacity:0; } to { transform: translateX(0); opacity:1; } }
+  </style>
+
+  <!-- Button loading state on form submit -->
+  <script>
+    document.addEventListener('submit', function(e) {
+      const btn = e.target.querySelector('[type=submit]');
+      if (btn && !btn.dataset.noload) btn.classList.add('loading');
+    });
+  </script>
+
+  <!-- PWA: Service Worker + Install banner -->
+  <script>
+    let deferredPrompt;
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
+    window.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const banner = document.getElementById('pwa-install-banner');
+      if (banner) banner.style.display = 'flex';
+    });
+    function installPWA() {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(() => {
+        deferredPrompt = null;
+        const banner = document.getElementById('pwa-install-banner');
+        if (banner) banner.style.display = 'none';
+      });
+    }
+  </script>
+
+  <div id="pwa-install-banner" style="display:none">
+    <span style="flex:1;font-size:.9rem">📱 Instalá la app para acceder más rápido desde tu celular</span>
+    <button class="btn btn-ghost" onclick="installPWA()"
+            style="color:#fff;border-color:rgba(255,255,255,.5)">Instalar</button>
+    <button onclick="document.getElementById('pwa-install-banner').style.display='none'"
+            style="background:none;border:none;color:rgba(255,255,255,.6);cursor:pointer;font-size:1.2rem">✕</button>
+  </div>
+</body>
+</html>
