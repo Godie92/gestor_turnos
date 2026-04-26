@@ -25,6 +25,9 @@ class Tenant(db.Model):
     email_password = db.Column(db.Text)
     email_from     = db.Column(db.String(120))
 
+    # MercadoPago (por tenant)
+    mp_access_token  = db.Column(db.Text, nullable=True)
+
     # Membresía
     membership_status     = db.Column(db.String(20), default='trial')
     # 'trial' | 'active' | 'expired' | 'cancelled'

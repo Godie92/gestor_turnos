@@ -20,6 +20,8 @@ class Appointment(db.Model):
     reminder_sent      = db.Column(db.Boolean, default=False)
     day_reminder_sent  = db.Column(db.Boolean, default=False)
     notes            = db.Column(db.Text)
+    payment_status   = db.Column(db.String(20), nullable=True)
+    # None = sin cobro | 'pending' | 'paid' | 'rejected'
     created_at       = db.Column(db.DateTime, default=datetime.utcnow)
 
     tenant           = db.relationship('Tenant', back_populates='appointments')

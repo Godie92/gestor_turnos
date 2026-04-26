@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Resultado del pago{% endblock %}
+
+{% block navbar %}
+<header class="navbar">
+  <div class="brand">
+    {% if tenant.logo_url %}<img src="{{ tenant.logo_url }}" alt="{{ tenant.name }}">{% endif %}
+    <span>{{ tenant.name }}</span>
+  </div>
+</header>
+{% endblock %}
+
+{% block content %}
+<div style="max-width:480px;margin:3rem auto;padding:0 1rem;text-align:center">
+  {% if status == 'ok' %}
+  <div style="font-size:4rem;margin-bottom:1rem">💳</div>
+  <h1 style="font-size:1.6rem;font-weight:800;margin-bottom:.5rem">¡Pago recibido!</h1>
+  <p style="color:var(--color-text-muted)">Tu turno está confirmado y el pago fue procesado.</p>
+  {% elif status == 'pending' %}
+  <div style="font-size:4rem;margin-bottom:1rem">⏳</div>
+  <h1 style="font-size:1.6rem;font-weight:800;margin-bottom:.5rem">Pago pendiente</h1>
+  <p style="color:var(--color-text-muted)">Tu pago está siendo procesado. Te avisaremos cuando se confirme.</p>
+  {% else %}
+  <div style="font-size:4rem;margin-bottom:1rem">❌</div>
+  <h1 style="font-size:1.6rem;font-weight:800;margin-bottom:.5rem">Pago no completado</h1>
+  <p style="color:var(--color-text-muted)">El pago no se procesó. Tu turno sigue reservado, podés intentarlo de nuevo.</p>
+  {% endif %}
+
+  <div style="display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap;margin-top:2rem">
+    {% if token %}
+    <a href="{{ url_for('public.booking_confirmation', slug=tenant.slug, token=token) }}"
+       class="btn btn-primary">Ver mi turno</a>
+    {% endif %}
+    <a href="{{ url_for('public.booking', slug=tenant.slug) }}" class="btn btn-ghost">Volver al inicio</a>
+  </div>
+</div>
+{% endblock %}

@@ -111,6 +111,45 @@
         </div>
       </details>
 
+      <!-- MercadoPago -->
+      <details style="margin-bottom:1rem" {{ 'open' if tenant.mp_access_token }}>
+        <summary style="cursor:pointer;font-weight:600;margin-bottom:.75rem">
+          💳 MercadoPago (cobros online)
+          {% if tenant.mp_access_token %}
+            <span style="font-size:.75rem;font-weight:400;color:var(--color-success);margin-left:.5rem">● Configurado</span>
+          {% else %}
+            <span style="font-size:.75rem;font-weight:400;color:var(--color-text-muted);margin-left:.5rem">No configurado</span>
+          {% endif %}
+        </summary>
+        <div style="background:#f8f9ff;border-radius:10px;padding:1rem;margin-bottom:1rem">
+          <p style="font-size:.875rem;color:var(--color-text-muted);margin-bottom:1rem">
+            Obtené tu <strong>Access Token</strong> de producción en
+            <a href="https://www.mercadopago.com.ar/developers/panel" target="_blank" style="color:var(--color-primary)">mercadopago.com.ar/developers/panel</a>.
+            Una vez configurado, los clientes podrán pagar su turno al reservar si el servicio tiene precio.
+          </p>
+          <div class="form-group">
+            <label>Access Token de producción</label>
+            <input type="password" name="mp_access_token" class="form-control"
+                   placeholder="{{ '••••••• (guardado)' if tenant.mp_access_token else 'APP_USR-...' }}">
+            <small style="color:var(--color-text-muted)">Dejá vacío para no cambiar. Empieza con APP_USR-</small>
+          </div>
+          {% if tenant.mp_access_token %}
+          <details style="margin-top:.5rem">
+            <summary style="font-size:.85rem;cursor:pointer;color:var(--color-danger)">Quitar MercadoPago</summary>
+            <div style="margin-top:.5rem;display:flex;gap:.5rem;align-items:center">
+              <input type="text" name="mp_access_token_clear" value="CLEAR"
+                     style="display:none" id="mp-clear-input">
+              <button type="button" class="btn btn-ghost btn-sm"
+                      style="color:var(--color-danger);border-color:var(--color-danger)"
+                      onclick="document.getElementById('mp-clear-input').name='mp_access_token';document.getElementById('mp-clear-input').value='';this.form.submit()">
+                Sí, quitar integración
+              </button>
+            </div>
+          </details>
+          {% endif %}
+        </div>
+      </details>
+
       <details style="margin-bottom:1rem">
         <summary style="cursor:pointer;font-weight:600;margin-bottom:.75rem">📱 WhatsApp Business API</summary>
         <div class="form-row">

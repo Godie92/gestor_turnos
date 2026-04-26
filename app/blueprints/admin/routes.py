@@ -278,6 +278,66 @@ def appointment_cancel(slug, appt_id):
 
 # ─── Configuración ───────────────────────────────────────────────────────────
 
+@admin_bp.route('/<slug>/admin/calendario')
+@login_required
+@tenant_required
+def calendar(slug):
+    tenant = g.tenant
+    professionals = Professional.query.filter_by(tenant_id=tenant.id, is_active=True).all()
+    return render_template('admin/calendar.html', tenant=tenant, professionals=professionals)
+
+
+@admin_bp.route('/<slug>/admin/calendario/eventos')
+@login_required
+@tenant_required
+def calendar_events(slug):
+    tenant = g.tenant
+    start_str = request.args.get('start', '')
+    end_str = request.args.get('end', '')
+    professional_id = request.args.get('professional_id', type=int)
+
+    try:
+        start_dt = datetime.fromisoformat(start_str[:19]) if start_str else datetime.now().replace(day=1)
+        end_dt = datetime.fromisoformat(end_str[:19]) if end_str else datetime.now()
+    except ValueError:
+        start_dt = datetime.now().replace(day=1)
+        end_dt = datetime.now()
+
+    q = (Appointment.query
+         .filter_by(tenant_id=tenant.id)
+         .filter(Appointment.scheduled_at >= start_dt)
+         .filter(Appointment.scheduled_at <= end_dt)
+         .filter(Appointment.status.notin_(['cancelled', 'no_show'])))
+    if professional_id:
+        q = q.filter_by(professional_id=professional_id)
+
+    color_map = {
+        'confirmed': '#6C63FF',
+        'arrived':   '#3B82F6',
+        'in_service': '#F59E0B',
+        'done':      '#10B981',
+    }
+
+    events = []
+    for appt in q.all():
+        end_time = appt.scheduled_at + timedelta(minutes=appt.duration_min)
+        events.append({
+            'id': appt.id,
+            'title': f'{appt.client_name} — {appt.service.name if appt.service else ""}',
+            'start': appt.scheduled_at.isoformat(),
+            'end': end_time.isoformat(),
+            'color': color_map.get(appt.status, '#6C63FF'),
+            'extendedProps': {
+                'phone': appt.client_phone,
+                'professional': appt.professional.name if appt.professional else '',
+                'status': appt.status_label,
+                'notes': appt.notes or '',
+            },
+        })
+
+    return jsonify(events)
+
+
 @admin_bp.route('/<slug>/admin/estadisticas')
 @login_required
 @tenant_required
@@ -540,6 +600,11 @@ def settings_general(slug):
         if wa_token:
             tenant.wa_token = wa_token
         tenant.timezone = request.form.get('timezone', tenant.timezone)
+
+        # MercadoPago
+        mp_token = request.form.get('mp_access_token', '').strip()
+        if mp_token:
+            tenant.mp_access_token = mp_token if mp_token != '' else None
 
         # Email config
         email_user = request.form.get('email_user', '').strip()

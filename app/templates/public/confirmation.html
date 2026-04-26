@@ -24,6 +24,11 @@
     </div>
     <div class="form-group" style="margin-bottom:.75rem">
       <strong>💅 Servicio:</strong> {{ appointment.service.name }}
+      {% if appointment.service.price %}
+      <span style="color:var(--color-text-muted);font-size:.9rem">
+        — ${{ '%g' % appointment.service.price | float }}
+      </span>
+      {% endif %}
     </div>
     {% if appointment.professional %}
     <div class="form-group" style="margin-bottom:.75rem">
@@ -38,15 +43,37 @@
     </div>
   </div>
 
+  {% if appointment.payment_status == 'paid' %}
+  <div style="margin-top:1rem;padding:.75rem 1rem;background:#d1fae5;border-radius:10px;color:#065f46;font-weight:600">
+    💳 Pago confirmado
+  </div>
+  {% elif tenant.mp_access_token and appointment.service and appointment.service.price and appointment.payment_status != 'paid' %}
+  <div style="margin-top:1.5rem">
+    <p style="color:var(--color-text-muted);font-size:.9rem;margin-bottom:.75rem">
+      Podés abonar ahora con MercadoPago
+    </p>
+    <form method="post" action="{{ url_for('public.mp_pay', slug=tenant.slug, token=token) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-primary" style="width:100%;font-size:1rem;padding:.75rem">
+        💳 Pagar ${{ '%g' % appointment.service.price | float }} con MercadoPago
+      </button>
+    </form>
+  </div>
+  {% endif %}
+
   {% if appointment.confirmation_sent %}
   <p style="color:var(--color-text-muted);font-size:.9rem;margin-top:1rem">
     📱 Te enviamos la confirmación por WhatsApp.
   </p>
   {% endif %}
 
-  <a href="{{ url_for('public.booking', slug=tenant.slug) }}"
-     class="btn btn-ghost" style="margin-top:1.5rem">
-    ← Hacer otra reserva
-  </a>
+  <div style="display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap;margin-top:1.5rem">
+    <a href="{{ url_for('public.booking', slug=tenant.slug) }}" class="btn btn-ghost">
+      ← Hacer otra reserva
+    </a>
+    <a href="{{ url_for('public.my_appointments', slug=tenant.slug) }}" class="btn btn-ghost">
+      📋 Ver mis turnos
+    </a>
+  </div>
 </div>
 {% endblock %}

@@ -54,6 +54,8 @@ def _send_due_reminders(app):
             try:
                 tenant = db.session.get(Tenant, appt.tenant_id)
                 send_appointment_reminder(app, tenant, appt)
+                from app.services.email_service import send_reminder_email
+                send_reminder_email(tenant, appt)
                 appt.reminder_sent = True
                 db.session.commit()
             except Exception as e:
@@ -89,6 +91,8 @@ def _send_day_before_reminders(app):
             try:
                 tenant = db.session.get(Tenant, appt.tenant_id)
                 send_day_before_reminder(app, tenant, appt)
+                from app.services.email_service import send_reminder_email
+                send_reminder_email(tenant, appt)
                 appt.day_reminder_sent = True
                 db.session.commit()
             except Exception as e:
