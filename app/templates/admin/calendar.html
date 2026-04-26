@@ -1,10 +1,9 @@
 {% extends 'admin/base_admin.html' %}
 {% block title %}Calendario{% endblock %}
 
-{% block head %}
+{% block extra_head %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css">
 <style>
-  #calendar { background:#fff; border-radius:12px; padding:1rem; }
   .fc-event { cursor:pointer; font-size:.8rem; }
   .fc-toolbar-title { font-size:1.1rem !important; font-weight:700; }
   #event-modal {
@@ -22,7 +21,7 @@
 {% block content %}
 <div class="container">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:.75rem">
-    <h1 class="page-title" style="margin-bottom:0">📅 Calendario</h1>
+    <h1 class="page-title" style="margin-bottom:0">🗓️ Calendario</h1>
     {% if professionals %}
     <select id="pro-filter" class="form-control" style="max-width:200px">
       <option value="">Todos los profesionales</option>
@@ -38,7 +37,6 @@
   </div>
 </div>
 
-<!-- Modal detalle de turno -->
 <div id="event-modal">
   <div id="event-modal-box">
     <h3 id="modal-title" style="margin-bottom:1rem;font-size:1.1rem"></h3>
@@ -52,15 +50,11 @@
 
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
 <script>
-const SLUG = '{{ tenant.slug }}';
 const EVENTS_URL = '{{ url_for("admin.calendar_events", slug=tenant.slug) }}';
-const APPTS_URL = '{{ url_for("admin.appointments", slug=tenant.slug) }}';
+const APPTS_URL  = '{{ url_for("admin.appointments",    slug=tenant.slug) }}';
 
-let calendar;
-
-document.addEventListener('DOMContentLoaded', function() {
-  const calEl = document.getElementById('calendar');
-  calendar = new FullCalendar.Calendar(calEl, {
+document.addEventListener('DOMContentLoaded', function () {
+  const cal = new FullCalendar.Calendar(document.getElementById('calendar'), {
     initialView: 'timeGridWeek',
     locale: 'es',
     headerToolbar: {
@@ -74,42 +68,35 @@ document.addEventListener('DOMContentLoaded', function() {
     height: 'auto',
     nowIndicator: true,
     eventSources: [{ url: EVENTS_URL, extraParams: getParams }],
-    eventClick: function(info) { showModal(info.event); },
-    eventDidMount: function(info) {
+    eventClick: function (info) { showModal(info.event); },
+    eventDidMount: function (info) {
       const p = info.event.extendedProps;
-      info.el.title = `${p.status} · ${p.phone}${p.notes ? '\n' + p.notes : ''}`;
+      info.el.title = p.status + ' · ' + p.phone + (p.notes ? '\n' + p.notes : '');
     },
   });
-  calendar.render();
+  cal.render();
 
   const proFilter = document.getElementById('pro-filter');
-  if (proFilter) {
-    proFilter.addEventListener('change', () => calendar.refetchEvents());
-  }
+  if (proFilter) proFilter.addEventListener('change', () => cal.refetchEvents());
 });
 
 function getParams() {
-  const proFilter = document.getElementById('pro-filter');
-  return proFilter ? { professional_id: proFilter.value } : {};
+  const f = document.getElementById('pro-filter');
+  return f ? { professional_id: f.value } : {};
 }
 
 function showModal(event) {
   const p = event.extendedProps;
   document.getElementById('modal-title').textContent = event.title;
-
   const start = event.start;
+  const isoDate = start.toISOString().slice(0, 10);
   const dateStr = start.toLocaleDateString('es-AR');
   const timeStr = start.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
-  const isoDate = start.toISOString().slice(0, 10);
-
-  let html = `
-    <div>📅 <strong>${dateStr}</strong> a las <strong>${timeStr}</strong> hs</div>
-    <div>📊 Estado: ${p.status}</div>
-    <div>📱 Teléfono: ${p.phone}</div>
-  `;
-  if (p.professional) html += `<div>👩 Profesional: ${p.professional}</div>`;
-  if (p.notes) html += `<div>📝 ${p.notes}</div>`;
-
+  let html = '<div>📅 <strong>' + dateStr + '</strong> a las <strong>' + timeStr + '</strong> hs</div>'
+           + '<div>📊 Estado: ' + p.status + '</div>'
+           + '<div>📱 Teléfono: ' + p.phone + '</div>';
+  if (p.professional) html += '<div>👩 Profesional: ' + p.professional + '</div>';
+  if (p.notes)        html += '<div>📝 ' + p.notes + '</div>';
   document.getElementById('modal-body').innerHTML = html;
   document.getElementById('modal-link').href = APPTS_URL + '?date=' + isoDate;
   document.getElementById('event-modal').classList.add('open');
@@ -119,7 +106,7 @@ function closeModal() {
   document.getElementById('event-modal').classList.remove('open');
 }
 
-document.getElementById('event-modal').addEventListener('click', function(e) {
+document.getElementById('event-modal').addEventListener('click', function (e) {
   if (e.target === this) closeModal();
 });
 </script>

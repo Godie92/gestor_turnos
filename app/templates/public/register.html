@@ -23,6 +23,7 @@
 
   <div class="card">
     <form method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <div class="form-group">
         <label>Nombre del negocio *</label>
         <input type="text" name="name" class="form-control"
