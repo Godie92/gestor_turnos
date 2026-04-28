@@ -48,13 +48,13 @@ if os.environ.get('FLASK_ENV') == 'production':
         elif existing_tables:
             # Tablas existen pero sin rastreo Alembic — marcar como al día
             log.info('Tablas existentes sin versión Alembic — marcando como head...')
-            stamp('head')
+            stamp('2f77f7a04275')
             log.info('Listo.')
         else:
             # Base totalmente nueva
             log.info('Base nueva — creando tablas...')
             db.create_all()
-            stamp('head')
+            stamp('2f77f7a04275')
             log.info('Tablas creadas.')
 
 if __name__ == '__main__':
