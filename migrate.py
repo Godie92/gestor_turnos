@@ -49,12 +49,12 @@ with app.app_context():
     if not existing_tables:
         log.info('Base nueva — creando todas las tablas...')
         db.create_all()
-        stamp('head')
+        stamp(revision='head')
         log.info('✓ Tablas creadas y migraciones marcadas.')
 
     elif not has_version:
         log.info('Tablas existentes sin control Alembic — sincronizando...')
-        stamp('head')
+        stamp(revision='head')
         log.info('✓ Sincronizado.')
 
     else:
