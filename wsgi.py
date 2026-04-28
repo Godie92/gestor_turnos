@@ -12,7 +12,7 @@ if os.environ.get('FLASK_ENV') == 'production':
     from sqlalchemy import text, inspect
     from sqlalchemy.exc import OperationalError
     from app.extensions import db
-    from flask_migrate import upgrade, stamp
+    from flask_migrate import upgrade
 
     with app.app_context():
         # Esperar hasta 30s a que la DB esté lista
@@ -29,33 +29,17 @@ if os.environ.get('FLASK_ENV') == 'production':
             log.error('No se pudo conectar a la DB.')
             raise SystemExit(1)
 
-        # Verificar si alembic_version ya tiene registros
+        # Always run upgrade() — it handles all cases:
+        # - If alembic_version exists, it applies pending migrations
+        # - If tables exist but no alembic_version, it will fail gracefully
+        # - If no tables exist, it creates them
+        log.info('Aplicando migraciones...')
         try:
-            version = db.session.execute(
-                text('SELECT version_num FROM alembic_version LIMIT 1')
-            ).fetchone()
-            has_version = version is not None
-        except Exception:
-            has_version = False
-
-        existing_tables = inspect(db.engine).get_table_names()
-
-        if has_version:
-            # DB rastreada por Alembic — aplicar migraciones pendientes
-            log.info('Aplicando migraciones pendientes...')
             upgrade()
             log.info('Migraciones aplicadas.')
-        elif existing_tables:
-            # Tablas existen pero sin rastreo Alembic — marcar como al día
-            log.info('Tablas existentes sin versión Alembic — marcando como head...')
-            stamp('2f77f7a04275')
-            log.info('Listo.')
-        else:
-            # Base totalmente nueva
-            log.info('Base nueva — creando tablas...')
-            db.create_all()
-            stamp('2f77f7a04275')
-            log.info('Tablas creadas.')
+        except Exception as e:
+            log.error('Error en migraciones: %s', e)
+            raise
 
 if __name__ == '__main__':
     app.run()
