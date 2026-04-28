@@ -30,10 +30,9 @@ class DevelopmentConfig(Config):
 
 class ProductionConfig(Config):
     DEBUG = False
-    _db_url = os.environ.get('DATABASE_URL', '')
-    if not _db_url:
-        logger.error('DATABASE_URL no está configurada. Definila en las variables de entorno.')
-    SQLALCHEMY_DATABASE_URI = _db_url.replace('postgres://', 'postgresql://')
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', '').replace(
+        'postgres://', 'postgresql://'
+    )
 
     @classmethod
     def validate(cls):
