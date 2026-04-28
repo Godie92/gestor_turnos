@@ -15,11 +15,27 @@ depends_on = None
 
 
 def upgrade():
+    conn = op.get_bind()
+
+    result = conn.execute(sa.text(
+        "SELECT column_name FROM information_schema.columns "
+        "WHERE table_name = 'appointments'"
+    ))
+    appointments_columns = {row[0] for row in result}
+
     with op.batch_alter_table('appointments', schema=None) as batch_op:
-        batch_op.add_column(sa.Column('payment_status', sa.String(length=20), nullable=True))
+        if 'payment_status' not in appointments_columns:
+            batch_op.add_column(sa.Column('payment_status', sa.String(length=20), nullable=True))
+
+    result = conn.execute(sa.text(
+        "SELECT column_name FROM information_schema.columns "
+        "WHERE table_name = 'tenants'"
+    ))
+    tenants_columns = {row[0] for row in result}
 
     with op.batch_alter_table('tenants', schema=None) as batch_op:
-        batch_op.add_column(sa.Column('mp_access_token', sa.Text(), nullable=True))
+        if 'mp_access_token' not in tenants_columns:
+            batch_op.add_column(sa.Column('mp_access_token', sa.Text(), nullable=True))
 
 
 def downgrade():
