@@ -2,7 +2,7 @@
 builder = "NIXPACKS"
 
 [deploy]
-startCommand = "gunicorn wsgi:app --workers 1 --timeout 120 --bind 0.0.0.0:$PORT"
+startCommand = "python migrate.py && gunicorn wsgi:app --workers 1 --timeout 120 --bind 0.0.0.0:$PORT"
 healthcheckPath = "/health"
 healthcheckTimeout = 120
 restartPolicyType = "ON_FAILURE"

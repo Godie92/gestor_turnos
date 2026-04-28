@@ -14,4 +14,4 @@ python-dotenv==1.2.2
 Pillow==12.2.0
 pywebpush==2.3.0
 cryptography==46.0.7
-mercadopago==2.3.0
+mercadopago==2.4.0
