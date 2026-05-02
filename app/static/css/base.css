@@ -190,7 +190,7 @@ tr:last-child td { border-bottom: none; }
 @media (max-width: 640px) {
   .container { padding: 1rem .75rem; padding-bottom: 5rem; }
   .navbar { padding: 0 .75rem; }
-  .navbar nav { display: none; }           /* nav top oculto en mobile → ver bottom-nav */
+  .navbar nav { display: none; }  /* top nav oculto en mobile, reemplazado por bottom-nav */
   .form-row { flex-direction: column; }
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
   .queue-item { flex-wrap: wrap; gap: .5rem; padding: .75rem; }

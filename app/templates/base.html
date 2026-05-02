@@ -30,6 +30,7 @@
     {% block nav_links %}{% endblock %}
   </header>
   {% endblock %}
+  {% block bottom_nav %}{% endblock %}
 
   {% if tenant is defined and tenant.membership_needs_payment %}
   <div style="background:{{ '#fff3cd' if tenant.membership_status == 'trial' else '#f8d7da' }};

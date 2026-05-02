@@ -16,29 +16,29 @@
   </a>
   <a href="{{ url_for('admin.calendar', slug=tenant.slug) }}"
      class="{{ 'active' if request.endpoint == 'admin.calendar' }}">
-    <span>🗓️</span> <span>Calendario</span>
+    <span>🗓️</span> <span class="hide-mobile">Calendario</span>
   </a>
   <a href="{{ url_for('admin.stats', slug=tenant.slug) }}"
      class="{{ 'active' if request.endpoint == 'admin.stats' }}">
-    <span>📊</span> <span>Stats</span>
+    <span>📊</span> <span class="hide-mobile">Stats</span>
   </a>
   <a href="{{ url_for('admin.clients', slug=tenant.slug) }}"
      class="{{ 'active' if request.endpoint in ('admin.clients', 'admin.client_history') }}">
-    <span>👥</span> <span>Clientes</span>
+    <span>👥</span> <span class="hide-mobile">Clientes</span>
   </a>
   <a href="{{ url_for('admin.settings_general', slug=tenant.slug) }}"
      class="{{ 'active' if 'settings' in request.endpoint }}">
-    <span>⚙️</span> <span>Config</span>
+    <span>⚙️</span> <span class="hide-mobile">Config</span>
   </a>
   <a href="{{ url_for('display.screen', slug=tenant.slug) }}" target="_blank">
-    <span>📺</span> <span>Pantalla</span>
+    <span>📺</span> <span class="hide-mobile">Pantalla</span>
   </a>
   <a href="{{ url_for('admin.account', slug=tenant.slug) }}"
      class="{{ 'active' if request.endpoint == 'admin.account' }}">
-    <span>👤</span> <span>Cuenta</span>
+    <span>👤</span> <span class="hide-mobile">Cuenta</span>
   </a>
   <a href="{{ url_for('auth.logout') }}">
-    <span>🚪</span> <span>Salir</span>
+    <span>🚪</span> <span class="hide-mobile">Salir</span>
   </a>
   <button id="notif-btn" title="Activar notificaciones"
           onclick="togglePush()"
@@ -47,8 +47,9 @@
     🔔
   </button>
 </nav>
+{% endblock %}
 
-<!-- Bottom navigation para mobile -->
+{% block bottom_nav %}
 <nav class="bottom-nav">
   <a href="{{ url_for('admin.dashboard', slug=tenant.slug) }}"
      class="{{ 'active' if request.endpoint == 'admin.dashboard' }}">
