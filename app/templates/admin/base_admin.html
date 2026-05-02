@@ -16,7 +16,7 @@
   </a>
   <a href="{{ url_for('admin.calendar', slug=tenant.slug) }}"
      class="{{ 'active' if request.endpoint == 'admin.calendar' }}">
-    <span>🗓️</span> <span class="hide-mobile">Calendario</span>
+    <span>🗓️</span> <span>Calendario</span>
   </a>
   <a href="{{ url_for('admin.stats', slug=tenant.slug) }}"
      class="{{ 'active' if request.endpoint == 'admin.stats' }}">
@@ -24,7 +24,7 @@
   </a>
   <a href="{{ url_for('admin.clients', slug=tenant.slug) }}"
      class="{{ 'active' if request.endpoint in ('admin.clients', 'admin.client_history') }}">
-    <span>👥</span> <span class="hide-mobile">Clientes</span>
+    <span>👥</span> <span>Clientes</span>
   </a>
   <a href="{{ url_for('admin.settings_general', slug=tenant.slug) }}"
      class="{{ 'active' if 'settings' in request.endpoint }}">
@@ -35,7 +35,7 @@
   </a>
   <a href="{{ url_for('admin.account', slug=tenant.slug) }}"
      class="{{ 'active' if request.endpoint == 'admin.account' }}">
-    <span>👤</span> <span class="hide-mobile">Cuenta</span>
+    <span>👤</span> <span>Cuenta</span>
   </a>
   <a href="{{ url_for('auth.logout') }}">
     <span>🚪</span> <span>Salir</span>
@@ -46,6 +46,30 @@
                  font-size:1.1rem;padding:.4rem .5rem;border-radius:6px">
     🔔
   </button>
+</nav>
+
+<!-- Bottom navigation para mobile -->
+<nav class="bottom-nav">
+  <a href="{{ url_for('admin.dashboard', slug=tenant.slug) }}"
+     class="{{ 'active' if request.endpoint == 'admin.dashboard' }}">
+    <span class="icon">🏠</span><span>Inicio</span>
+  </a>
+  <a href="{{ url_for('admin.queue', slug=tenant.slug) }}"
+     class="{{ 'active' if request.endpoint == 'admin.queue' }}">
+    <span class="icon">🔢</span><span>Cola</span>
+  </a>
+  <a href="{{ url_for('admin.appointments', slug=tenant.slug) }}"
+     class="{{ 'active' if request.endpoint == 'admin.appointments' }}">
+    <span class="icon">📅</span><span>Turnos</span>
+  </a>
+  <a href="{{ url_for('admin.clients', slug=tenant.slug) }}"
+     class="{{ 'active' if request.endpoint in ('admin.clients', 'admin.client_history') }}">
+    <span class="icon">👥</span><span>Clientes</span>
+  </a>
+  <a href="{{ url_for('admin.settings_general', slug=tenant.slug) }}"
+     class="{{ 'active' if 'settings' in request.endpoint }}">
+    <span class="icon">⚙️</span><span>Config</span>
+  </a>
 </nav>
 {% endblock %}
 

@@ -40,6 +40,7 @@
   {% if upcoming %}
   <div class="card">
     <div class="card-header">⏰ Próximos turnos de hoy</div>
+    <div class="table-wrap">
     <table>
       <thead>
         <tr>
@@ -60,6 +61,7 @@
         {% endfor %}
       </tbody>
     </table>
+    </div>
     <div style="margin-top:1rem">
       <a href="{{ url_for('admin.appointments', slug=tenant.slug) }}" style="font-size:.875rem">
         Ver todos los turnos →
