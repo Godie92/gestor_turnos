@@ -356,7 +356,8 @@ def stats(slug):
              .filter(Appointment.tenant_id == tenant.id)
              .filter(Appointment.status.notin_(['cancelled', 'no_show']))
              .filter(db.func.date(Appointment.scheduled_at) >= start)
-             .group_by('day').order_by('day').all())
+             .group_by(db.func.date(Appointment.scheduled_at))
+             .order_by(db.func.date(Appointment.scheduled_at)).all())
 
     # Servicios más solicitados
     top_services = (db.session.query(
@@ -456,7 +457,7 @@ def clients(slug):
     # Agrupar por teléfono
     subq = (db.session.query(
                 Appointment.client_phone,
-                Appointment.client_name,
+                db.func.max(Appointment.client_name).label('client_name'),
                 db.func.count(Appointment.id).label('total'),
                 db.func.max(Appointment.scheduled_at).label('last_visit'),
             )
