@@ -12,6 +12,7 @@ class Tenant(db.Model):
     logo_url       = db.Column(db.String(255))
     primary_color  = db.Column(db.String(7), default='#6C63FF')
     phone_number   = db.Column(db.String(20))
+    wa_number      = db.Column(db.String(30))
     wa_phone_id    = db.Column(db.String(60))
     wa_token       = db.Column(db.Text)
     timezone       = db.Column(db.String(50), default='America/Argentina/Buenos_Aires')

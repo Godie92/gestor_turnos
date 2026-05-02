@@ -595,6 +595,7 @@ def settings_general(slug):
         tenant.business_type = request.form.get('business_type', tenant.business_type)
         tenant.primary_color = request.form.get('primary_color', tenant.primary_color)
         tenant.phone_number = request.form.get('phone_number', '').strip()
+        tenant.wa_number = request.form.get('wa_number', '').strip() or None
         tenant.wa_phone_id = request.form.get('wa_phone_id', '').strip()
         wa_token = request.form.get('wa_token', '').strip()
         if wa_token:

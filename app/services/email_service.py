@@ -80,6 +80,37 @@ def send_booking_confirmation_email(tenant, appointment, cancel_url: str):
     send_tenant_email(tenant, to, subject, html)
 
 
+def send_new_booking_admin_email(tenant, appointment):
+    """Notifica al dueño del negocio cuando llega un turno nuevo."""
+    to = tenant.email_user
+    if not to:
+        return
+    subject = f'Nuevo turno: {appointment.client_name} — {appointment.scheduled_at.strftime("%d/%m %H:%M")}'
+    prof = f'<tr><td style="color:#666;padding:.3rem 0">👤 Profesional:</td><td><strong>{appointment.professional.name}</strong></td></tr>' if appointment.professional else ''
+    email_str = f'<tr><td style="color:#666;padding:.3rem 0">📧 Email:</td><td>{appointment.client_email}</td></tr>' if appointment.client_email else ''
+    html = f"""
+    <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:1rem">
+      <h2 style="color:#6C63FF;margin-bottom:1rem">📅 Nuevo turno reservado</h2>
+      <p>Llegó una reserva nueva en <strong>{tenant.name}</strong>.</p>
+      <table style="background:#f8f9fa;border-radius:10px;padding:1rem 1.25rem;width:100%;margin:1rem 0;border-collapse:collapse">
+        <tr><td style="color:#666;padding:.3rem 0">👤 Cliente:</td>
+            <td><strong>{appointment.client_name}</strong></td></tr>
+        <tr><td style="color:#666;padding:.3rem 0">📞 Teléfono:</td>
+            <td>{appointment.client_phone}</td></tr>
+        {email_str}
+        <tr><td style="color:#666;padding:.3rem 0">💅 Servicio:</td>
+            <td>{appointment.service.name if appointment.service else '—'}</td></tr>
+        {prof}
+        <tr><td style="color:#666;padding:.3rem 0">📅 Fecha:</td>
+            <td><strong>{appointment.scheduled_at.strftime('%d/%m/%Y %H:%M')}</strong></td></tr>
+      </table>
+      <hr style="border:none;border-top:1px solid #eee;margin:1.5rem 0">
+      <p style="color:#aaa;font-size:.8rem">{tenant.name}</p>
+    </div>
+    """
+    send_tenant_email(tenant, to, subject, html)
+
+
 def send_reminder_email(tenant, appointment):
     to = getattr(appointment, 'client_email', None)
     if not to:

@@ -73,6 +73,12 @@
               {% elif appt.status == 'arrived' %}
               <span style="color:var(--color-text-muted);font-size:.85rem">En cola</span>
               {% endif %}
+              {% set wa_msg = 'Hola ' ~ appt.client_name ~ '! Tu turno en ' ~ tenant.name ~ ' es el ' ~ appt.scheduled_at.strftime('%d/%m/%Y') ~ ' a las ' ~ appt.scheduled_at.strftime('%H:%M') ~ ' hs — ' ~ (appt.service.name if appt.service else '') ~ '. Te esperamos!' %}
+              <a href="https://wa.me/{{ appt.client_phone | replace('+','') | replace(' ','') | replace('-','') }}?text={{ wa_msg | urlencode }}"
+                 target="_blank" rel="noopener"
+                 class="btn btn-ghost btn-sm"
+                 style="color:#25D366;border-color:#25D366"
+                 title="Enviar WhatsApp">💬</a>
               <button type="button" class="btn btn-ghost btn-sm"
                       onclick="openNotes({{ appt.id }}, {{ appt.notes|tojson or '\"\"' }})">
                 📝

@@ -154,8 +154,9 @@ def booking(slug):
         token = _make_token(appt.id)
         cancel_url = url_for('public.cancel_booking', slug=slug, token=token, _external=True)
         send_booking_confirmation(current_app._get_current_object(), tenant, appt, cancel_url)
-        from app.services.email_service import send_booking_confirmation_email
+        from app.services.email_service import send_booking_confirmation_email, send_new_booking_admin_email
         send_booking_confirmation_email(tenant, appt, cancel_url)
+        send_new_booking_admin_email(tenant, appt)
         appt.confirmation_sent = True
         db.session.commit()
 

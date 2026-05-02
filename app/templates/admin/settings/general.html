@@ -150,18 +150,27 @@
         </div>
       </details>
 
-      <details style="margin-bottom:1rem">
-        <summary style="cursor:pointer;font-weight:600;margin-bottom:.75rem">📱 WhatsApp Business API</summary>
-        <div class="form-row">
+      <!-- WhatsApp simple (sin API) -->
+      <details style="margin-bottom:1rem" {{ 'open' if tenant.wa_number }}>
+        <summary style="cursor:pointer;font-weight:600;margin-bottom:.75rem">
+          📱 WhatsApp del negocio
+          {% if tenant.wa_number %}
+            <span style="font-size:.75rem;font-weight:400;color:var(--color-success);margin-left:.5rem">● {{ tenant.wa_number }}</span>
+          {% else %}
+            <span style="font-size:.75rem;font-weight:400;color:var(--color-text-muted);margin-left:.5rem">No configurado</span>
+          {% endif %}
+        </summary>
+        <div style="background:#f8f9ff;border-radius:10px;padding:1rem;margin-bottom:1rem">
+          <p style="font-size:.875rem;color:var(--color-text-muted);margin-bottom:1rem">
+            Al configurar tu número de WhatsApp, los clientes podrán contactarte directamente
+            desde la página de confirmación del turno. No se requiere ninguna API ni token.
+          </p>
           <div class="form-group">
-            <label>Phone Number ID (Meta)</label>
-            <input type="text" name="wa_phone_id" class="form-control"
-                   value="{{ tenant.wa_phone_id or '' }}" placeholder="123456789...">
-          </div>
-          <div class="form-group">
-            <label>Access Token</label>
-            <input type="password" name="wa_token" class="form-control"
-                   placeholder="{{ '••••••• (guardado)' if tenant.wa_token else 'Pegá tu token aquí' }}">
+            <label>Número de WhatsApp (con código de país)</label>
+            <input type="tel" name="wa_number" class="form-control"
+                   value="{{ tenant.wa_number or '' }}"
+                   placeholder="+5491155667788">
+            <small style="color:var(--color-text-muted)">Formato: +54 + código de área + número. Sin espacios ni guiones.</small>
           </div>
         </div>
       </details>
